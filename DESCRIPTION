@@ -1,0 +1,32 @@
+Package: splinectomeR
+Type: Package
+Title: Test for significance in longitudinal data with one or two populations
+Version: 0.1.0
+Author: person("Robin", "Shields-Cutler", email = "cutle051@umn.edu", 
+          role = c("aut", "cre"))
+Maintainer: Robin Shields-Cutler <cutle051 at umn.edu>
+URL: https://github.com/RRShieldsCutler/splinectomeR
+BugReports: https://github.com/RRShieldsCutler/splinectomeR/issues
+Description: This package contains several statistical analysis tools
+    developed to aid in analyzing longitudinal data that may be noisy,
+    missing datapoints, unbalanced, etc. As the name implies, the functions
+    use smoothing splines to make comparisons to a null hypothesis, usually by
+    permuting the relevant features to generate a random distribution against
+    which to test the true measured values (your data). With these tools, you
+    can compare between groups overall, between groups across a continuous
+    variable, or for a non-zero change in a single population. For
+    example, if you were testing the level of cortisol in patients given
+    a drug or placebo, this package would allow you to test whether there is
+    an overall significant difference between the groups' cortisol response, 
+    whether there are differences between the groups at some time intervals but
+    not others, and whether there is a non-zero change in the response of the
+    drug group over time.
+License: MIT License
+Encoding: UTF-8
+LazyData: true
+Imports:
+    dplyr,
+    reshape2
+Suggests:
+    cowplot,
+    ggplot2
