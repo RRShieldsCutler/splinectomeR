@@ -20,7 +20,7 @@
 #' @examples 
 #' permuspliner(data = ChickWeight, xvar = 'Time',
 #'              yvar = 'weight', category = 'Diet',
-#'              cases = 'Chick', groups = '1,4')
+#'              cases = 'Chick', groups = '1,2')
 
 
 permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,

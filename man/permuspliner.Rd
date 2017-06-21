@@ -37,5 +37,5 @@ Tests for a significant difference between two groups overall.
 \examples{
 permuspliner(data = ChickWeight, xvar = 'Time',
              yvar = 'weight', category = 'Diet',
-             cases = 'Chick', groups = '1,4')
+             cases = 'Chick', groups = '1,2')
 }
