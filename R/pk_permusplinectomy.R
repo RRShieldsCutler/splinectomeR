@@ -18,7 +18,7 @@
 #' @param ints Number of x intervals over which to measure area
 #' @export
 #' @examples 
-#' permuspliner(data = 'ChickWeight', xvar = 'Time',
+#' permuspliner(data = ChickWeight, xvar = 'Time',
 #'              yvar = 'weight', category = 'Diet',
 #'              cases = 'Chick', groups = '1,4')
 
@@ -26,8 +26,8 @@
 permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
                          cases = NA, groups = NA, perms = 99, set_spar = NULL,
                          cut_low = 4, ints = 1000) {
-  if (is.na(data) | is.na(category) | is.na(xvar) |
-      is.na(yvar) | is.na(cases)) {
+  reqs = c(data, category, xvar, yvar, cases)
+  if (any(is.na(reqs))) {
     stop('Missing required parameters. See usage with ?permusplinr')
   }
   
@@ -84,7 +84,7 @@ permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   case_shuff <- 'case_shuff'
   .spline_permute <- function(randy, cases, category, xvar, yvar) {
     randy_meta <- randy %>% distinct_(cases, .keep_all = T)
-    randy_meta$case_shuff <- sample(randy_meta[,category])
+    randy_meta$case_shuff <- sample(randy_meta[, category])
     randy_meta <- randy_meta %>% select_(cases, case_shuff)
     randy <- merge(randy, randy_meta, by = cases, all = T)
     randy_v1 <- filter(randy, case_shuff == v1 & !is.na(randy[,xvar]))
@@ -101,9 +101,9 @@ permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
     xx <- seq(x0, x1, by = xby)
     randy_v1_fit <- data.frame(predict(randy_v1_spl, xx))
     colnames(randy_v1_fit) <- c('x', 'var1')
-    randy_v1_fit <- data.frame(predict(randy_v2_spl, xx))
-    colnames(randy_v1_fit) <- c('x', 'var2')
-    spl_dist <- merge(randy_v1_fit, randy_v1_fit, by = 'x')
+    randy_v2_fit <- data.frame(predict(randy_v2_spl, xx))
+    colnames(randy_v2_fit) <- c('x', 'var2')
+    spl_dist <- merge(randy_v1_fit, randy_v2_fit, by = 'x')
     spl_dist$abs_distance <- abs(spl_dist$var1 - spl_dist$var2)
     perm_area <- sum(spl_dist$abs_distance) / ints
     permuted <- append(permuted, perm_area)
@@ -118,4 +118,6 @@ permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   
   # Return the p-value
   cat(paste('\np-value =', round(pval, digits = 5), '\n\n'))
+  result <- list("pval" = pval)
+  return(result)
 }

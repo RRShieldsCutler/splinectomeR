@@ -35,7 +35,7 @@ the y component but shuffling the hypothesized trend.
 Tests for a significant difference between two groups overall.
 }
 \examples{
-permuspliner(data = 'ChickWeight', xvar = 'Time',
+permuspliner(data = ChickWeight, xvar = 'Time',
              yvar = 'weight', category = 'Diet',
              cases = 'Chick', groups = '1,4')
 }
