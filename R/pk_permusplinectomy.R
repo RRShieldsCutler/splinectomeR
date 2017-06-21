@@ -14,7 +14,7 @@
 #' @param groups If more than two groups, the two groups to compare.
 #' @param perms The number of permutations to generate
 #' @param set_spar Set the spar parameter for splines
-#' @param cut_low Remove data with fewer than __ points
+#' @param cut_low Remove individual cases with fewer than _ observations
 #' @param ints Number of x intervals over which to measure area
 #' @export
 #' @examples 
@@ -25,15 +25,14 @@
 
 permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
                          cases = NA, groups = NA, perms = 99, set_spar = NULL,
-                         cut_low = 4, ints = 1000) {
+                         cut_low = NA, ints = 1000) {
   reqs = c(data, category, xvar, yvar, cases)
   if (any(is.na(reqs))) {
-    stop('Missing required parameters. See usage with ?permusplinr')
+    stop('Missing required parameters. Run ?permusplinr to see help docs')
   }
   
   perms = as.numeric(perms)
   ints = as.numeric(ints)
-  cut_low = as.numeric(cut_low)
   cases = as.character(cases)
   groups = as.character(groups)
   

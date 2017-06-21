@@ -23,7 +23,7 @@ the y component but shuffling the hypothesized trend.
 
 \item{set_spar}{Set the spar parameter for splines}
 
-\item{cut_low}{Remove data with fewer than __ points}
+\item{cut_low}{Remove individual cases with fewer than _ observations}
 
 \item{ints}{Number of x intervals over which to measure area}
 
