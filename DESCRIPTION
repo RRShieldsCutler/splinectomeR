@@ -4,7 +4,7 @@ Title: Test for significance in longitudinal data with one or two populations
 Version: 0.1.0
 Author: person("Robin", "Shields-Cutler", email = "cutle051@umn.edu", 
           role = c("aut", "cre"))
-Maintainer: Robin Shields-Cutler <cutle051 at umn.edu>
+Maintainer: Robin Shields-Cutler <cutle051@umn.edu>
 URL: https://github.com/RRShieldsCutler/splinectomeR
 BugReports: https://github.com/RRShieldsCutler/splinectomeR/issues
 Description: This package contains several statistical analysis tools
@@ -30,3 +30,4 @@ Imports:
 Suggests:
     cowplot,
     ggplot2
+RoxygenNote: 6.0.1
