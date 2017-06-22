@@ -26,6 +26,9 @@
 permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
                          cases = NA, groups = NA, perms = 99, set_spar = NULL,
                          cut_low = NA, ints = 1000) {
+  
+  require(dplyr)
+  
   reqs = c(data, category, xvar, yvar, cases)
   if (any(is.na(reqs))) {
     stop('Missing required parameters. Run ?permusplinr to see help docs')
@@ -117,6 +120,8 @@ permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   
   # Return the p-value
   cat(paste('\np-value =', round(pval, digits = 5), '\n\n'))
-  result <- list("pval" = pval)
+  result <- list("pval" = pval,
+                 "v1_interpolated" = v1_spl_f, "v2_interpolated" = v2_spl_f,
+                 "v1_spline" = df_v1_spl, "v2_spline" = df_v2_spl)
   return(result)
 }

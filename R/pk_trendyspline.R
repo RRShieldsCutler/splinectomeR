@@ -30,11 +30,14 @@
 #' @examples 
 #' trendyspliner(data = ChickWeight, xvar = 'Time',
 #'              yvar = 'weight', category = 'Diet',
-#'              cases = 'Chick', groups = '1')
+#'              cases = 'Chick', group = '1')
 
 trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
                          cases = NA, group = NA, perms = 99, set_spar = NULL,
                          cut_low = 4, ints = 1000, quiet = FALSE) {
+  
+  require(dplyr)
+  
   reqs = c(data, xvar, yvar, cases)
   if (any(is.na(reqs))) {
     stop('Missing required parameters. Run ?trendyspliner to see help docs')
@@ -75,7 +78,7 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   }
   
   ## First determine the group mean (null hypothesis for changing over time)
-  y.mean <- mean(df[, yvar])
+  # y.mean <- mean(df[, yvar])
   df.spl <- with(df,
                    smooth.spline(x=df[, xvar], y=df[, yvar],
                                  spar = set_spar))
@@ -85,10 +88,11 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   xx <- seq(x0, x1, by = xby)
   spl.fit <- data.frame(predict(df.spl, xx))
   colnames(spl.fit) <- c('x', 'var1')
+  y.mean = spl.f$var1[1]
   real.spl.dist <- spl.fit
   spl.fit$y_mean <- y.mean
-  spl.fit$abs.distance <- abs(spl.fit$var1 - spl.fit$y_mean)
-  real.area <- sum(spl.fit$abs.distance) / ints
+  spl.fit$distance <- (spl.fit$var1 - spl.fit$y_mean)
+  real.area <- sum(spl.fit$distance) / ints
   
   # Define the permutation function
   y_shuff <- 'y_shuff'
@@ -105,8 +109,8 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
     randy.fit <- data.frame(predict(randy.spl, xx))
     colnames(randy.fit) <- c('x', 'var1')
     randy.fit$y_mean <- y.mean
-    randy.fit$abs.distance <- abs(randy.fit$var1 - randy.fit$y_mean)
-    perm.area <- sum(randy.fit$abs.distance) / ints
+    randy.fit$distance <- (randy.fit$var1 - randy.fit$y_mean)
+    perm.area <- sum(randy.fit$distance) / ints
     permuted <- append(permuted, perm.area)
     return(permuted)
   }
@@ -115,7 +119,7 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   permuted <- list()
   permuted <- replicate(perms, 
                        .spline_permute(randy = df, cases, xvar, yvar))
-  pval <- (sum(permuted >= as.numeric(real.area)) + 1) / (perms + 1)
+  pval <- (sum(lapply(permuted, abs) >= abs(real.area)) + 1) / (perms + 1)
   
   # Return the p-value
   if (quiet == FALSE) {

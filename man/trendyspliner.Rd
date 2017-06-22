@@ -47,5 +47,5 @@ it assumes the entire dataset is the single population.
 \examples{
 trendyspliner(data = ChickWeight, xvar = 'Time',
              yvar = 'weight', category = 'Diet',
-             cases = 'Chick', groups = '1')
+             cases = 'Chick', group = '1')
 }
