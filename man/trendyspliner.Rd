@@ -19,6 +19,8 @@ the y component but shuffling the hypothesized trend.
 
 \item{group}{If more than two groups, the two groups to compare.}
 
+\item{mean_center}{Before processing, mean center data by individual/case}
+
 \item{perms}{The number of permutations to generate}
 
 \item{set_spar}{Set the spar parameter for splines}

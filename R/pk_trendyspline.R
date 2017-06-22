@@ -21,6 +21,7 @@
 #' @param category The column name of the category to be tested, if present.
 #' @param cases The column name defining the individual cases, e.g. patients.
 #' @param group If more than two groups, the two groups to compare.
+#' @param mean_center Before processing, mean center data by individual/case
 #' @param perms The number of permutations to generate
 #' @param set_spar Set the spar parameter for splines
 #' @param cut_low Remove data with fewer than __ points
@@ -33,7 +34,7 @@
 #'              cases = 'Chick', group = '1')
 
 trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
-                         cases = NA, group = NA, perms = 99, set_spar = NULL,
+                         cases = NA, group = NA, mean_center = TRUE, perms = 99, set_spar = NULL,
                          cut_low = NA, ints = 1000, quiet = FALSE) {
   
   require(dplyr)
@@ -77,6 +78,32 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
     cat(paste('\nPerforming the trendyspline test with', perms, 'permutations...\n'))
   }
   
+  
+  if (mean_center == TRUE) {
+    if (quiet == FALSE) {
+      cat(paste('\nMean centering the data...\n'))
+    }
+    all_ids <- as.character(unique(df[, cases]))
+    grp_mean <- mean(df[, yvar])
+    mean_center <- function(case_df, grp_mean) {
+      offset <- (mean(case_df[, yvar]) - grp_mean)
+      case_df$y_offset_adj <- (case_df[, yvar] - offset)
+      case_df[, yvar] <- NULL
+      names(case_df)[names(case_df) == 'y_offset_adj'] <- yvar
+      return(case_df)
+    }
+    df_adj <- list()
+    i = 1
+    for (id in all_ids) {
+      case_df <- df[df[, cases] == id, ]
+      case_df <- mean_center(case_df, grp_mean)
+      df_adj[[i]] <- case_df
+      i = i + 1
+    }
+    df <- do.call(rbind, df_adj)
+  }
+  
+  
   ## First determine the group mean (null hypothesis for changing over time)
   # y.mean <- mean(df[, yvar])
   df.spl <- with(df,
@@ -88,10 +115,10 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   xx <- seq(x0, x1, by = xby)
   spl.fit <- data.frame(predict(df.spl, xx))
   colnames(spl.fit) <- c('x', 'var1')
-  y_mean = spl.fit$var1[1]
+  y_base = spl.fit$var1[1]
   real.spl.dist <- spl.fit
-  spl.fit$y_mean <- y_mean
-  spl.fit$distance <- (spl.fit$var1 - spl.fit$y_mean)
+  spl.fit$y_base <- y_base
+  spl.fit$distance <- (spl.fit$var1 - spl.fit$y_base)
   real.area <- sum(spl.fit$distance) / ints
   
   # Define the permutation function
@@ -108,8 +135,9 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
     xx <- seq(x0, x1, by = xby)
     randy.fit <- data.frame(predict(randy.spl, xx))
     colnames(randy.fit) <- c('x', 'var1')
-    randy.fit$y_mean <- y_mean
-    randy.fit$distance <- (randy.fit$var1 - randy.fit$y_mean)
+    p_base = randy.fit$var1[1]
+    randy.fit$p_base <- p_base
+    randy.fit$distance <- (randy.fit$var1 - randy.fit$p_base)
     perm.area <- sum(randy.fit$distance) / ints
     permuted <- append(permuted, perm.area)
     return(permuted)
