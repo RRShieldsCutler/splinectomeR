@@ -47,7 +47,8 @@ the single group of interest with the category and group arguments. Otherwise
 it assumes the entire dataset is the single population.
 }
 \examples{
-trendyspliner(data = ChickWeight, xvar = 'Time',
+result <- trendyspliner(data = ChickWeight, xvar = 'Time',
              yvar = 'weight', category = 'Diet',
              cases = 'Chick', group = '1')
+result$pval
 }

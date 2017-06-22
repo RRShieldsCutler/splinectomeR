@@ -29,12 +29,13 @@
 #' @param quiet Silence all text outputs
 #' @export
 #' @examples 
-#' trendyspliner(data = ChickWeight, xvar = 'Time',
+#' result <- trendyspliner(data = ChickWeight, xvar = 'Time',
 #'              yvar = 'weight', category = 'Diet',
 #'              cases = 'Chick', group = '1')
+#' result$pval
 
 trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
-                         cases = NA, group = NA, mean_center = TRUE, perms = 99, set_spar = NULL,
+                         cases = NA, group = NA, mean_center = TRUE, perms = 999, set_spar = NULL,
                          cut_low = NA, ints = 1000, quiet = FALSE) {
   
   require(dplyr)
@@ -153,6 +154,6 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   if (quiet == FALSE) {
     cat(paste('\np-value =', round(pval, digits = 5), '\n\n'))
   }
-  result <- list("pval" = pval)
+  result <- list("pval" = pval, "imputed_curve" = spl.fit, "group_spline" = df.spl)
   return(result)
 }
