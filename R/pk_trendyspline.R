@@ -88,9 +88,9 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   xx <- seq(x0, x1, by = xby)
   spl.fit <- data.frame(predict(df.spl, xx))
   colnames(spl.fit) <- c('x', 'var1')
-  y.mean = spl.f$var1[1]
+  y_mean = spl.fit$var1[1]
   real.spl.dist <- spl.fit
-  spl.fit$y_mean <- y.mean
+  spl.fit$y_mean <- y_mean
   spl.fit$distance <- (spl.fit$var1 - spl.fit$y_mean)
   real.area <- sum(spl.fit$distance) / ints
   
@@ -108,7 +108,7 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
     xx <- seq(x0, x1, by = xby)
     randy.fit <- data.frame(predict(randy.spl, xx))
     colnames(randy.fit) <- c('x', 'var1')
-    randy.fit$y_mean <- y.mean
+    randy.fit$y_mean <- y_mean
     randy.fit$distance <- (randy.fit$var1 - randy.fit$y_mean)
     perm.area <- sum(randy.fit$distance) / ints
     permuted <- append(permuted, perm.area)
