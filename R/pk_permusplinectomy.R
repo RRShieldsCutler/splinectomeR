@@ -16,16 +16,18 @@
 #' @param set_spar Set the spar parameter for splines
 #' @param cut_low Remove individual cases with fewer than _ observations
 #' @param ints Number of x intervals over which to measure area
+#' @param quiet Silence all text outputs
 #' @export
 #' @examples 
-#' permuspliner(data = ChickWeight, xvar = 'Time',
+#' result <- permuspliner(data = ChickWeight, xvar = 'Time',
 #'              yvar = 'weight', category = 'Diet',
 #'              cases = 'Chick', groups = '1,2')
+#' result$pval
 
 
 permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
-                         cases = NA, groups = NA, perms = 99, set_spar = NULL,
-                         cut_low = NA, ints = 1000) {
+                         cases = NA, groups = NA, perms = 999, set_spar = NULL,
+                         cut_low = NA, ints = 1000, quiet = FALSE) {
   
   require(dplyr)
   
@@ -57,9 +59,10 @@ permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
     keep_ids <- as.character(keep_ids[keep_ids$Freq > cut_low, ]$Var1)
     in_df <- in_df[in_df[, cases] %in% keep_ids, ]
   }
-  
-  cat(paste('\nTesting between', v1, 'and', v2, 'for a difference in', yvar, '\n'))
-  cat(paste('\nScalpel please: performing permusplinectomy with', perms, 'permutations...\n'))
+  if (quiet == FALSE) {
+    cat(paste('\nTesting between', v1, 'and', v2, 'for a difference in', yvar, '\n'))
+    cat(paste('\nScalpel please: performing permusplinectomy with', perms, 'permutations...\n'))
+  }
   
   # The experimentally reported response
   df_v1 <- in_df %>% filter(in_df[, category] == v1 & !is.na(in_df[, xvar]))
@@ -119,7 +122,9 @@ permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   pval <- (sum(permuted >= as.numeric(real_area)) + 1) / (perms + 1)
   
   # Return the p-value
-  cat(paste('\np-value =', round(pval, digits = 5), '\n\n'))
+  if (quiet == FALSE) {
+    cat(paste('\np-value =', round(pval, digits = 5), '\n\n'))
+  }
   result <- list("pval" = pval,
                  "v1_interpolated" = v1_spl_f, "v2_interpolated" = v2_spl_f,
                  "v1_spline" = df_v1_spl, "v2_spline" = df_v2_spl)

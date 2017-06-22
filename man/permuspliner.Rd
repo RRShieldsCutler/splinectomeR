@@ -27,6 +27,8 @@ the y component but shuffling the hypothesized trend.
 
 \item{ints}{Number of x intervals over which to measure area}
 
+\item{quiet}{Silence all text outputs}
+
 \item{x}{The independent variable; is continuous, e.g. time.}
 
 \item{y}{The dependent variable; is continuous, e.g. temperature.}
