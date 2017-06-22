@@ -18,9 +18,11 @@ This function tests for a greater-than-chance difference between two groups of i
 
 An example using the `ChickWeight` dataset from the `datasets` package:
 ```R
-> result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', cases = 'Chick', category = 'Diet', groups = '1,2', perms = 999)
+> # Test for difference in weight change over time between Diet groups 1 and 2
+> result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', cases = 'Chick', category = 'Diet', groups = '1,2')
 > result$pval
 [1] 0.003
+> # Test for difference in weight change over time between Diet groups 2 and 3
 > result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', cases = 'Chick', category = 'Diet', groups = '2,3')
 > result$pval
 [1] 0.159
@@ -33,6 +35,7 @@ This function tests for a non-zero trend in the response over the x variable. In
 
 If the dataframe contains multiple groups/populations, and a trend is sought for just one group, you can automatically subset to that group by defining the `category` (column name) and the `group` of interest, as in the example below.
 ```R
+> # Test for non-zero trend in Chick weight in Diet group 1 over Time
 > result <- trendyspliner(data = ChickWeight, x = 'Time', y = 'weight', cases = 'Chick', category = 'Diet', group = '1', perms = 999)
 > result$pval
 [1] 0.001
