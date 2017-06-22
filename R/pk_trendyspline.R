@@ -34,7 +34,7 @@
 
 trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
                          cases = NA, group = NA, perms = 99, set_spar = NULL,
-                         cut_low = 4, ints = 1000, quiet = FALSE) {
+                         cut_low = NA, ints = 1000, quiet = FALSE) {
   
   require(dplyr)
   
