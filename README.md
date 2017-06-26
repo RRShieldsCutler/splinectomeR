@@ -4,7 +4,7 @@
 These functions are designed to provide statistical analyses in _real_ longitudinal data, which may be missing timepoints or limited data at any given timepoint, have noisy biological variability, and variable numbers of samples per individual being measured. Comparisons can be made between two groups or within a single group for a non-zero change over the independent axis. Both return a p-value based on a randomly permuted distribution of the real data.
 
 ## Installation:
-To install from GitHub Requires `devtools` package. Once you have that installed and loaded, run the following to install splinectomeR:
+To install from GitHub, use the `devtools` package. Once you have that installed and loaded, run the following to install splinectomeR:
 ```R
 > devtools::install_github('RRShieldsCutler/splinectomeR')
 > library(splinectomeR)
