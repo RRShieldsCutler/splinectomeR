@@ -2,20 +2,25 @@
 % Please edit documentation in R/pk_sliding_spline.R
 \name{sliding_spliner.plot.splines}
 \alias{sliding_spliner.plot.splines}
-\title{Sliding spliner plot splines}
+\title{Plot group splines}
 \usage{
-sliding_spliner.plot.splines(data_df, cases = cases, xvar = xvar,
-  yvar = yvar)
+sliding_spliner.plot.splines(plot.spline.data, category = category,
+  xvar = xvar, yvar = yvar)
 }
 \arguments{
-\item{cases}{The column name defining the individual cases, e.g. patients.}
-
 \item{data}{The dataframe of imputed points generated from splines}
 
 \item{x}{The independent variable; is continuous, e.g. time.}
 
 \item{y}{The dependent variable; is continuous, e.g. temperature.}
+
+\item{cases}{The column name defining the individual cases, e.g. patients.}
 }
 \description{
 Plot the individual splines grouped by two categories of interest
+}
+\examples{
+sliding_spliner.plot.splines(result$spline_longform,
+ category = 'Diet', xvar = 'Time', yvar = 'weight')
+
 }

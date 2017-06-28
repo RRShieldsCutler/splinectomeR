@@ -17,7 +17,9 @@ Test usage
 
 \item{set_spar}{Set the spar parameter for splines}
 
-\item{cut_low}{Remove data with fewer than __ points}
+\item{cut_sparse}{Remove sparse cases with fewer than __ data points (default 4)}
+
+\item{test_density}{Minimum density of cases in each group to report p-value (default 3)}
 
 \item{ints}{Number of x intervals over which to measure significance}
 
@@ -41,7 +43,7 @@ it assumes the entire dataset is the single population.
 \examples{
 result <- trendyspliner(data = ChickWeight, xvar = 'Time',
              yvar = 'weight', category = 'Diet',
-             cases = 'Chick', group = '1')
+             cases = 'Chick', groups = '1,2')
 result$pval
 
 }
