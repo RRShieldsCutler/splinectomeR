@@ -20,7 +20,7 @@
 #' @param y The dependent variable; is continuous, e.g. temperature.
 #' @param category The column name of the category to be tested, if present.
 #' @param cases The column name defining the individual cases, e.g. patients.
-#' @param group If more than two groups, the two groups to compare.
+#' @param group If more than one group in the data, the group to compare.
 #' @param mean_center Before processing, mean center data by individual/case
 #' @param perms The number of permutations to generate
 #' @param set_spar Set the spar parameter for splines
@@ -124,7 +124,7 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   
   # Define the permutation function
   y_shuff <- 'y_shuff'
-  .spline_permute <- function(randy, cases, xvar, yvar) {
+  .spline_permute <- function(randy, cases, xvar, yvar, permuted) {
     randy.meta <- randy %>% select_(cases, xvar)
     randy.meta$y_shuff <- sample(randy[, yvar])
     randy.spl <- with(randy.meta, smooth.spline(x = randy.meta[, xvar],
@@ -147,7 +147,7 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   # Run the permutation over desired number of iterations
   permuted <- list()
   permuted <- replicate(perms, 
-                       .spline_permute(randy = df, cases, xvar, yvar))
+                       .spline_permute(randy = df, cases, xvar, yvar, permuted = permuted))
   pval <- (sum(lapply(permuted, abs) >= abs(real.area)) + 1) / (perms + 1)
   
   # Return the p-value
