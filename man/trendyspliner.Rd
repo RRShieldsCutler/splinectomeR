@@ -17,7 +17,7 @@ the y component but shuffling the hypothesized trend.
 
 \item{cases}{The column name defining the individual cases, e.g. patients.}
 
-\item{group}{If more than two groups, the two groups to compare.}
+\item{group}{If more than one group in the data, the group to compare.}
 
 \item{mean_center}{Before processing, mean center data by individual/case}
 
