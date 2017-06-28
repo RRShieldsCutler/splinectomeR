@@ -4,20 +4,18 @@
 \alias{sliding_spliner.plot.pvals}
 \title{Plot sliding spliner p-values}
 \usage{
-sliding_spliner.plot.pvals(data, cases = cases)
+sliding_spliner.plot.pvals(data, xvar = "xvar")
 }
 \arguments{
 \item{data}{The dataframe of p-values over the x variable}
 
-\item{cases}{The column name defining the individual cases, e.g. patients.}
-
-\item{x}{The independent variable; is continuous, e.g. time.}
+\item{xvar}{The independent variable; is continuous, e.g. time.}
 }
 \description{
 Plot the imputed p-values over the x variable range
 }
 \examples{
 sliding_spliner.plot.pvals(result$pval_table,
- cases = 'Chick')
+ xvar = 'Time')
 
 }

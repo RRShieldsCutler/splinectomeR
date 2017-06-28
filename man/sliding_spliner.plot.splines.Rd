@@ -4,17 +4,17 @@
 \alias{sliding_spliner.plot.splines}
 \title{Plot group splines}
 \usage{
-sliding_spliner.plot.splines(plot.spline.data, category = category,
-  xvar = xvar, yvar = yvar)
+sliding_spliner.plot.splines(plot.spline.data, category = "category",
+  xvar = "xvar", yvar = "yvar")
 }
 \arguments{
+\item{category}{The data category being compared}
+
+\item{xvar}{The independent variable; is continuous, e.g. time.}
+
+\item{yvar}{The dependent variable; is continuous, e.g. temperature.}
+
 \item{data}{The dataframe of imputed points generated from splines}
-
-\item{x}{The independent variable; is continuous, e.g. time.}
-
-\item{y}{The dependent variable; is continuous, e.g. temperature.}
-
-\item{cases}{The column name defining the individual cases, e.g. patients.}
 }
 \description{
 Plot the individual splines grouped by two categories of interest
