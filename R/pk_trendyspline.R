@@ -113,7 +113,7 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   x0 <- min(df.spl$x)
   x1 <- max(df.spl$x)
   xby <- (x1 - x0) / (ints - 1)
-  xx <- seq(x0, x1, by = xby)
+  xx <- seq(from = x0, to = x1, by = xby)
   spl.fit <- data.frame(predict(df.spl, xx))
   colnames(spl.fit) <- c('x', 'var1')
   y_base = spl.fit$var1[1]
@@ -133,7 +133,7 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
     x0 <- min(randy.spl$x)
     x1 <- max(randy.spl$x)
     xby <- (x1 - x0) / (ints - 1)
-    xx <- seq(x0, x1, by = xby)
+    xx <- seq(from = x0, to = x1, by = xby)
     randy.fit <- data.frame(predict(randy.spl, xx))
     colnames(randy.fit) <- c('x', 'var1')
     p_base = randy.fit$var1[1]

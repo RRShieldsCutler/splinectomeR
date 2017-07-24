@@ -82,9 +82,9 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   df <- df[df[, cases] %in% cases.keep, ]
   
   # Get the range of the independent variable (e.g. time) to set spline limits
-  x.min <- as.numeric(min(df[, xvar]))
-  x.max <- as.numeric(max(df[, xvar]))
-  xrang <- seq(x.min, x.max, by = ((x.max - x.min) / (ints - 1)))
+  x.min <- min(as.numeric(df[, xvar]))
+  x.max <- max(as.numeric(df[, xvar]))
+  xrang <- seq(from = x.min, to = x.max, by = ((x.max - x.min) / (as.numeric(ints) - 1)))
   
   # Save the group labels for each individual/unit
   df.groups <- df %>% 
