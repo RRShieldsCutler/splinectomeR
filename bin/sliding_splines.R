@@ -61,6 +61,8 @@ if (is.na(opt$input) | is.na(opt$category) | is.na(opt$x_variable) |
   stop('Missing required parameters. See usage and options (--help)')
 }
 
+require(splinectomeR)
+
 # Parse command line
 infile = opt$input  # tsv file with data in long form
 category = as.character(opt$category)  # the column header label for the two groups
@@ -75,7 +77,21 @@ spar.param = opt$spar  # default NULL
 prefix = opt$prefix
 
 
+# param data A dataframe object containing your data.
+# param x The independent variable; is continuous, e.g. time.
+# param y The dependent variable; is continuous, e.g. temperature.
+# param category The column name of the category to be tested, if present.
+# param cases The column name defining the individual cases, e.g. patients.
+# param groups If more than two groups, the two groups to compare.
+# param set_spar Set the spar parameter for splines
+# param cut_sparse Remove sparse cases with fewer than __ data points (default 4)
+# param test_density Minimum density of cases in each group to report p-value (default 3)
+# param ints Number of x intervals over which to measure significance
+# param quiet Silence all text outputs
+
+
+
 # TODO: wrap the R function using optparse arguments
 
-
+# TODO: Add the ggplot plotting to create PDF from results
 
