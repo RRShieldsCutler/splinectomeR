@@ -14,7 +14,7 @@
 #' @param groups If more than two groups, the two groups to compare.
 #' @param perms The number of permutations to generate
 #' @param set_spar Set the spar parameter for splines
-#' @param tol In rare cases, must manually set the tol parameter (default 1e-4)
+#' @param set_tol In rare cases, must manually set the tol parameter (default 1e-4)
 #' @param cut_low Remove individual cases with fewer than _ observations
 #' @param ints Number of x intervals over which to measure area
 #' @param quiet Silence all text outputs
@@ -28,7 +28,7 @@
 
 permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
                          cases = NA, groups = NA, perms = 999, set_spar = NULL,
-                         cut_low = NA, ints = 1000, quiet = FALSE, tol = 1e-4) {
+                         cut_low = NA, ints = 1000, quiet = FALSE, set_tol = 1e-4) {
   
   require(dplyr)
   
@@ -70,10 +70,10 @@ permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   df_v2 <- in_df %>% filter(in_df[, category] == v2 & !is.na(in_df[, xvar]))
   df_v1_spl <- with(df_v1,
                    smooth.spline(x=df_v1[, xvar], y=df_v1[, yvar],
-                                 spar = set_spar))
+                                 spar = set_spar, tol = set_tol))
   df_v2_spl <- with(df_v2,
                    smooth.spline(x=df_v2[, xvar], y=df_v2[, yvar],
-                                 spar = set_spar))
+                                 spar = set_spar, tol = set_tol))
   x0 <- max(c(min(df_v1_spl$x)), min(df_v2_spl$x))
   x1 <- min(c(max(df_v1_spl$x)), max(df_v2_spl$x))
   xby <- (x1 - x0) / (ints - 1)
@@ -97,10 +97,10 @@ permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
     randy_v2 <- filter(randy, case_shuff == v2 & !is.na(randy[,xvar]))
     randy_v1_spl <- with(randy_v1,
                         smooth.spline(x=randy_v1[, xvar], y=randy_v1[, yvar],
-                                      spar = set_spar))
+                                      spar = set_spar, tol = set_tol))
     randy_v2_spl <- with(randy_v2,
                         smooth.spline(x=randy_v2[, xvar], y=randy_v2[, yvar],
-                                      spar = set_spar))
+                                      spar = set_spar, tol = set_tol))
     x0 <- max(c(min(randy_v1_spl$x)), min(randy_v2_spl$x))
     x1 <- min(c(max(randy_v1_spl$x)), max(randy_v2_spl$x))
     xby <- (x1 - x0) / (ints - 1)
