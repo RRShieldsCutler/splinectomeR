@@ -119,12 +119,14 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
     x.table <- x.table[!is.na(x.table[, n]), ]
     x.table <- droplevels(x.table)
     cat.freq <- data.frame(table(x.table[, category]))
-    if (cat.freq$Freq[1] >= test_density & cat.freq$Freq[2] >= test_density) {
-      mw <- wilcox.test(x.table[, n] ~ x.table[, category])
-      pval <- mw$p.value
-      num.pts <- cat.freq$Freq[1] + cat.freq$Freq[2]
-      return(c(pval, n, num.pts))
-    } else {}
+    if (length(cat.freq$Freq) == 2) {
+      if (cat.freq$Freq[1] >= test_density & cat.freq$Freq[2] >= test_density) {
+        mw <- wilcox.test(x.table[, n] ~ x.table[, category])
+        pval <- mw$p.value
+        num.pts <- cat.freq$Freq[1] + cat.freq$Freq[2]
+        return(c(pval, n, num.pts))
+      }
+    }
   }
   
   # Run the stats test on each step of the spline on each data unit
@@ -132,7 +134,7 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   pval.x <- list()
   pval.num.pts <- list()  # Save the number of total data points in each comparison
   for (n in xrang) {
-    pval <- mann_whitney_per_bit(spl.table.p, n)
+    pval <- mann_whitney_per_bit(spline.table = spl.table.p, n)
     pvals.list <- append(pvals.list, pval[1])
     pval.x <- append(pval.x, pval[2])
     pval.num.pts <- append(pval.num.pts, pval[3])
