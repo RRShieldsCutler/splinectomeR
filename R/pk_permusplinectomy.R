@@ -14,6 +14,7 @@
 #' @param groups If more than two groups, the two groups to compare.
 #' @param perms The number of permutations to generate
 #' @param set_spar Set the spar parameter for splines
+#' @param tol In rare cases, must manually set the tol parameter (default 1e-4)
 #' @param cut_low Remove individual cases with fewer than _ observations
 #' @param ints Number of x intervals over which to measure area
 #' @param quiet Silence all text outputs
@@ -27,7 +28,7 @@
 
 permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
                          cases = NA, groups = NA, perms = 999, set_spar = NULL,
-                         cut_low = NA, ints = 1000, quiet = FALSE) {
+                         cut_low = NA, ints = 1000, quiet = FALSE, tol = 1e-4) {
   
   require(dplyr)
   
