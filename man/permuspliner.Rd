@@ -13,6 +13,10 @@ the y component but shuffling the hypothesized trend.
 \arguments{
 \item{data}{A dataframe object containing your data.}
 
+\item{xvar}{The independent variable; is continuous, e.g. time.}
+
+\item{yvar}{The dependent variable; is continuous, e.g. temperature.}
+
 \item{category}{The column name of the category to be tested.}
 
 \item{cases}{The column name defining the individual cases, e.g. patients.}
@@ -29,9 +33,9 @@ the y component but shuffling the hypothesized trend.
 
 \item{quiet}{Silence all text outputs}
 
-\item{x}{The independent variable; is continuous, e.g. time.}
+\item{set_tol}{In rare cases, must manually set the tol parameter (default 1e-4)}
 
-\item{y}{The dependent variable; is continuous, e.g. temperature.}
+\item{cut_sparse}{Minimum number of total observations necessary per group to fit a spline (default 4)}
 }
 \description{
 Tests for a significant difference between two groups overall.

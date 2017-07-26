@@ -7,8 +7,8 @@
 #' @rdname permuspliner
 #' @description Tests for a significant difference between two groups overall.
 #' @param data A dataframe object containing your data.
-#' @param x The independent variable; is continuous, e.g. time.
-#' @param y The dependent variable; is continuous, e.g. temperature.
+#' @param xvar The independent variable; is continuous, e.g. time.
+#' @param yvar The dependent variable; is continuous, e.g. temperature.
 #' @param category The column name of the category to be tested.
 #' @param cases The column name defining the individual cases, e.g. patients.
 #' @param groups If more than two groups, the two groups to compare.
@@ -16,6 +16,7 @@
 #' @param set_spar Set the spar parameter for splines
 #' @param set_tol In rare cases, must manually set the tol parameter (default 1e-4)
 #' @param cut_low Remove individual cases with fewer than _ observations
+#' @param cut_sparse Minimum number of total observations necessary per group to fit a spline (default 4)
 #' @param ints Number of x intervals over which to measure area
 #' @param quiet Silence all text outputs
 #' @export
@@ -28,7 +29,8 @@
 
 permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
                          cases = NA, groups = NA, perms = 999, set_spar = NULL,
-                         cut_low = NA, ints = 1000, quiet = FALSE, set_tol = 1e-4) {
+                         cut_low = NA, ints = 1000, quiet = FALSE, 
+                         set_tol = 1e-4, cut_sparse = 4) {
   
   require(dplyr)
   
@@ -68,6 +70,9 @@ permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   # The experimentally reported response
   df_v1 <- in_df %>% filter(in_df[, category] == v1 & !is.na(in_df[, xvar]))
   df_v2 <- in_df %>% filter(in_df[, category] == v2 & !is.na(in_df[, xvar]))
+  if (length(df_v1[, xvar]) < cut_sparse | length(df_v2[, xvar]) < cut_sparse) {
+    stop('Not enough data in each group to fit spline')
+  }
   df_v1_spl <- with(df_v1,
                    smooth.spline(x=df_v1[, xvar], y=df_v1[, yvar],
                                  spar = set_spar, tol = set_tol))
