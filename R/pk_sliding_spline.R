@@ -63,7 +63,7 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   
   if (is.na(groups)) {
     if (length(unique(df[, category])) > 2) {
-      stop('More than two groups in category column. Define groups with "--groups=Name1,Name2"')
+      stop('More than two groups in category column. Define groups with groups = "Name1,Name2"')
     }
     v1 <- as.character(unique(df[, category])[1])
     v2 <- as.character(unique(df[, category])[2])

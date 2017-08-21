@@ -47,7 +47,7 @@ permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   in_df <- data
   if (is.na(groups)) {
     if (length(unique(in_df[, category])) > 2) {
-      stop('More than two groups in category column. Define groups with "--groups=Name1,Name2"')
+      stop('More than two groups in category column. Define groups with (groups = "Name1,Name2")')
     }
     v1 <- unique(in_df[, category])[1]
     v2 <- unique(in_df[, category])[2]
