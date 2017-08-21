@@ -1,0 +1,585 @@
+---
+title: "Yassour et al (Science Trans Med, 2016) Antibiotics Cohort analysis with splinectomeR"
+author: "Robin Shields-Cutler"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Yassour et al (Science Trans Med, 2016) Antibiotics Cohort analysis with splinectomeR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## Demonstrating use of the splinectomeR package on a published dataset
+This document shows the data wrangling to generate splinectomeR-friendly dataframes, and the subsequent analysis using the splinectomeR functions.  
+  
+The data come from a study on the microbiome of Danish babies in the first 36 months of life. The picked OTU tables and corresponding metadata are available via the BROAD institute [here](https://pubs.broadinstitute.org/diabimmune/antibiotics-cohort), and their findings were published in the following article:  
+[Yassour, et al. (2016) Natural history of the infant gut microbiome and impact of antibiotic treatment on bacterial strain diversity and stability. *Sci. Trans. Med.* 8(343)](http://stm.sciencemag.org/content/8/343/343ra81.short)  
+  
+The analysis below uses the 16S rRNA sequencing-based taxa table, included as package data here under the name `filtered_otu_table`.  
+  
+I saved each sheet of the metadata Excel file as a separate .txt file (though you could use an Excel-reading R package instead). I also discovered that there are a couple samples in the taxa table without metadata; similarly there is a sample in the metadata that doesn't have taxonomy data. I removed these from the metadata and any analysis below.  
+
+### Data wrangling
+
+```{r package setup, message=FALSE, warning=FALSE}
+# First, load the required packages
+library(dplyr)
+library(tibble)
+library(ggplot2)
+library(reshape2)
+library(tidyr)
+library(splinectomeR)
+library(vegan)
+```
+
+First, we can extract the samples and their corresponding timepoints from the taxa table's header.  
+
+```{r}
+otus <- filtered_otu_table
+sample_names <- colnames(otus)
+sample_time <- lapply(sample_names, FUN = function(x) strsplit(x, split = '_'))
+timeseries <- data.frame(matrix(nrow = 1101, ncol = 2, data = 0))
+j = 1
+for (i in sample_time) {
+  timeseries[j,1] <- i[[1]][1]
+  timeseries[j,2] <- i[[1]][2]
+  j = j + 1
+}
+colnames(timeseries) <- c('sample_id', 'month')
+head(timeseries, n=4)
+# To save this table for reference:
+# write.csv(timeseries, file = 'samples_timepoints2.csv', row.names = F, quote = F)
+```
+
+We can quickly then confirm the study IDs, and that we have the right longitudinal series by comparing these numbers to those in the paper. Next, we want to generate a full metadata/mapping file with information about whether each baby had antibiotics (Y/N), their breastfeeding status, delivery type, sex, and anything else. I combined the feeding rows with the general demographics in Excel before importing, and made the headers more R friendly (replaced spaces with underscores, etc). This data is included with the package, and is named `general_metadata`. The antibiotics sheet is likewise saved with the package as `antibiotics_metadata`.
+
+```{r metadata peek, echo=FALSE}
+metadata <- general_metadata
+head(metadata, n = 4)
+```
+
+
+```{r antibiotic exposure}
+# Create the binary antibiotic exposure annotation
+abx <- antibiotics_metadata
+abx_pos <- unique(abx$Subject)
+abx_df <- data.frame(abx_pos, 'Y')
+abx_neg <- setdiff(timeseries$sample_id, abx_pos)
+abx_df2 <- setNames(data.frame(abx_neg, 'N'), c('abx_pos', 'X.Y.'))
+abx_df <- rbind(abx_df, abx_df2)
+colnames(abx_df) <- c('baby_id', 'antibiotics_y_n')
+dim(abx_df)
+head(abx_df, n=4)
+# write.csv(abx_df, file = 'antibiotics_samplenames.csv', row.names = F, quote = F)
+```
+
+```{r metadata}
+# Now, merge OTUs with each piece of the metadata
+otus <- filtered_otu_table
+otus <- data.frame(t(otus))
+otus <- tibble::rownames_to_column(otus, var = 'sampleID')
+otus_split <- otus %>% separate(sampleID, c('baby_id', 'timepoint'), sep = '_')
+row.names(otus_split) <- otus$sampleID
+otus_split <- rownames_to_column(otus_split, var = '#SampleID')
+
+metadata <- general_metadata
+colnames(metadata)[1] <- 'baby_id'
+metadata <- merge(metadata, abx_df, by = 'baby_id')
+# Merge the metadata with the OTU table to create a master metadata 
+# file including the taxonomy abundances
+full_data <- merge(metadata, otus_split, by = 'baby_id')
+x <- '#SampleID'
+# Move the "#SampleID" column to the front:
+full_data <- full_data[c(x, setdiff(names(full_data), x))]
+# write_delim(full_data, 'full_taxa_metadata_yassour.txt', delim = '\t')
+```
+
+The paper focuses many of its analyses at the Family level of taxonomy. This next chunk parses out the family abundances from the OTU table.
+
+```{r parse at family}
+otus <- filtered_otu_table
+otus <- tibble::rownames_to_column(otus, var = 'OTU_ID')
+otus_family <- otus %>% filter(!grepl('g__', otus$OTU_ID) & grepl('f__', otus$OTU_ID))
+otus_family_sum <- otus_family
+otus_family_sum$f__abun <- rowSums(otus_family[, 2:ncol(otus_family)])
+otus_family_sum <- otus_family_sum[c('f__abun',
+                                     setdiff(names(otus_family_sum), 'f__abun'))]
+otus_family_sum <- otus_family_sum[order(-otus_family_sum$f__abun), ]
+# write_delim(otus_family_sum, 'family_level_OTUs_with_sums.txt', delim = '\t')
+# The top 10 Families in this dataset
+otus_family_sum[1:10, 2]
+```
+
+Check that the abundances roughly add up to 1 across the families in a sample:  
+```{r}
+colSums(otus_family_sum[, 3:10])
+```
+
+Now, we're going to take the Family level data table and merge that with the metadata. We'll be doing this process a bunch, so let's define a function for all the tedious flipping and merging.  
+```{r Format OTUs and merge with metadata, echo=TRUE}
+flip_split_merge <- function(otus_in, metadata) {
+  row.names(otus_in) <- otus_in$OTU_ID
+  otus_in$OTU_ID <- NULL
+  otus_in <- data.frame(t(otus_in))
+  otus_in <- tibble::rownames_to_column(otus_in, var = 'sampleID')
+  otus_split <- otus_in %>% separate(sampleID, c('baby_id', 'timepoint'), sep = '_')
+  otus_split$timepoint <- as.numeric(otus_split$timepoint)  # Trouble recognizing numbers
+  row.names(otus_split) <- otus_in$sampleID
+  otus_split <- rownames_to_column(otus_split, var = 'SampleID')
+  otus_meta <- merge(metadata, otus_split, by = 'baby_id')
+  otus_meta <- otus_meta[c('SampleID', setdiff(names(otus_meta), 'SampleID'))]
+  return(otus_meta)
+}
+```
+
+Ok, now use that function on the Family-filtered OTU table
+```{r family level metadata}
+family_tax_metadata <- flip_split_merge(otus_family, metadata)
+# To save the table:
+# write_delim(family_tax_metadata, 'family_taxa_metadata_yassour.txt', delim = '\t')
+```
+  
+Ok, now we can do some data analysis  
+
+### Data analysis
+
+First, let's see if we can regenerate their first plot with the top ~6 bacterial Families (Fig. 1B). Before that, we'll make an ultra-longform table that will be absurdly long but easier to work with in wrangling and ggplot.  
+
+```{r top 10 families}
+top_10_families <- otus_family_sum[1:10, 2]
+top_10_families <- lapply(top_10_families, FUN = function(x) gsub(x, pattern = '|',
+                                                                  replacement = '.',
+                                                                  fixed = T))
+top_family_meta <- family_tax_metadata %>%
+  gather(key = 'family', value = 'relative_abundance',
+         13:as.numeric(ncol(family_tax_metadata))) %>%
+  filter(family %in% top_10_families)
+# Double check that it worked:
+unique(top_family_meta$family)
+```
+
+Now we can plot!  
+```{r Fig 1B remake}
+plot.df <- top_family_meta
+plot.df <- separate(plot.df, col = family, sep = 'f__', remove = T,
+                    into = c('uplevel', 'family'))
+plot.df$uplevel <- NULL
+
+p <- ggplot(plot.df, aes(color = family, x = timepoint, y = relative_abundance)) +
+  theme_bw() + geom_smooth(method='loess', span = 0.5) +
+  labs(x = 'months', y = 'relative abundance') +
+  theme(legend.position = 'right') + scale_x_continuous(breaks = c(0,12,24,36)) +
+  theme(panel.grid = element_blank())
+p
+```
+
+Alright! We included a few more families, and the legend is completely useless, but the plot is a very close match to Figure 1B.  
+### Finally: Applying the splinectomeR package
+
+The `splinectomeR` package allows us to do a large number of statistical tests from this datatable using the longitudinal data. In the paper, statistical tests aren't performed across the intact longitudinal data, instead relying on visual comparisons of stream plots, for example, or on factors derived from the data, such as comparing consecutive-sample beta-diversity. With `splinectomeR`, we can quickly test whether abundance of a taxonomic unit (Family, Genus, etc) is significantly different across the time series between babies that had antibiotics and those who didn't, or male/female babies, birth mode, etc. We can also ask whether the abundance of a particular taxonomic unit is going up or down over time in a particular group (antibiotic exposed, female, etc).  
+
+##### Family level differences between categorical groups
+```{r bacteroidaceae comparison}
+# Test the difference between Bacteroidaceae abundance in
+#  antibiotic exposed vs. non-exposed conditions
+f__Bacteroidaceae.top_family_meta <- top_family_meta %>% filter(family == 'k__Bacteria.p__Bacteroidetes.c__Bacteroidia.o__Bacteroidales.f__Bacteroidaceae')
+result <- permuspliner(data = f__Bacteroidaceae.top_family_meta, xvar = 'timepoint',
+                       yvar = 'relative_abundance', perms = 999,
+                       category = 'antibiotics_y_n', cases = 'baby_id')
+```
+
+Perhaps it is significant at some point along the time course, however?  
+
+```{r bacteroidaceae sliding splines}
+slide_result <- sliding_spliner(data = f__Bacteroidaceae.top_family_meta,
+                                xvar = 'timepoint', yvar = 'relative_abundance',
+                                category = 'antibiotics_y_n', cases = 'baby_id',
+                                test_density = 10, cut_sparse = 7,
+                                set_spar = 0.5, quiet = F)
+sliding_spliner.plot.pvals(data = slide_result$pval_table, xvar = 'timepoint')
+```
+There are significant differences near the 30-month window. There's also some interesting periodicity to the trend.  
+  
+Next, let's see if the overall change in Bacteroidaceae abundance is non-linear across all babies.  
+
+```{r bacteroidaceae trend splines}
+trendy_result <- trendyspliner(data = f__Bacteroidaceae.top_family_meta,
+                               xvar = 'timepoint', quiet = F, cases = 'baby_id',
+                               mean_center = T, yvar = 'relative_abundance')
+```
+
+Maybe there are different trends in the mixed vs only breastmilk in the hospital groups?  
+
+```{r bacteroidaceae feeding trends}
+result_mixedfeed <- trendyspliner(data = f__Bacteroidaceae.top_family_meta,
+                                  xvar = 'timepoint', quiet = F, cases = 'baby_id',
+                                  mean_center = T, category = 'feeding_in_hospital',
+                                  group = 'mixed', yvar = 'relative_abundance')
+result_breastmilk <- trendyspliner(data = f__Bacteroidaceae.top_family_meta, 
+                                   xvar = 'timepoint', quiet = F, cases = 'baby_id',
+                                   mean_center = T, category = 'feeding_in_hospital',
+                                   group = 'OnlyBreastmilk', yvar = 'relative_abundance')
+```
+
+Both are significant, but remember, we'd have to plot it to know what direction each is going.  
+
+#### Automating over all the Families
+We can also run this over all the top Families programmatically (so long as we adjust the p-values manually afterward).  
+
+```{r top 20 families loop}
+top_20_families <- otus_family_sum[1:20, 2]
+top_20_families <- lapply(top_20_families, FUN = function(x) gsub(x, pattern = '|',
+                                                                  replacement = '.',
+                                                                  fixed = T))
+top20_family_meta <- family_tax_metadata %>% 
+  gather(key = 'family', value = 'relative_abundance',
+         13:as.numeric(ncol(family_tax_metadata))) %>%
+  filter(family %in% top_20_families)
+# Double check that it worked:
+unique(top20_family_meta$family)
+# Create a list containing each family's OTU+metadata table
+f__top20_results <- list()
+for (f in unique(top20_family_meta$family)) {
+  f__df <- top20_family_meta %>% filter(family == f)
+  print(f)
+  f.result <- permuspliner(data = f__df, xvar = 'timepoint',
+                       yvar = 'relative_abundance', perms = 999,
+                       category = 'antibiotics_y_n', cases = 'baby_id',
+                       cut_low = 6, quiet = T)
+  print(f.result$pval)
+  f__top20_results <- append(f__top20_results, f.result)
+}
+```
+  
+Interesting, let's see what the Porphyromonadaceae plot looks like.  
+```{r zoom on porphyromonadaceae}
+Porphyromonadaceae.top_family_meta <- top20_family_meta %>%
+  filter(family == 'k__Bacteria.p__Bacteroidetes.c__Bacteroidia.o__Bacteroidales.f__Porphyromonadaceae')
+p <- ggplot(Porphyromonadaceae.top_family_meta,
+            aes(color = antibiotics_y_n, x = timepoint, y = relative_abundance)) +
+  theme_bw() + geom_smooth(method='loess', span = 0.5) +
+  labs(x = 'months', y = 'relative abundance') +
+  theme(legend.position = 'bottom') + scale_x_continuous(breaks = c(0,12,24,36)) +
+  theme(panel.grid = element_blank())
+p
+```
+
+So there's one that's actually becoming more different over time, instead of converging.  
+Let's look at birth mode the same way
+
+```{r loop permutations on top20}
+# To do FDR on the pvalues, you can save them all in a list, then use p.adjust
+f__top20_pvals <- list()
+for (f in unique(top20_family_meta$family)) {
+  f__df <- top20_family_meta %>% filter(family == f)
+  print(f)
+  f.result <- permuspliner(data = f__df, xvar = 'timepoint',
+                       yvar = 'relative_abundance', perms = 999,
+                       category = 'birth_mode', cases = 'baby_id',
+                       cut_low = 6, quiet = T)
+  f__top20_pvals <- append(f__top20_pvals, f.result$pval)
+  print(f.result$pval)
+}
+# Perform FDR on the pvalues list
+p.adjust(f__top20_pvals, method = 'fdr')
+```
+At the time of writing, there are several families near significance (Bacteroidaceae, Lachnospiraceae, Veillonellaceae, Pasteurellaceae) but not astonishing. Perhaps they are more so at a given time in the series...
+
+```{r sliding spline on low pvalue families}
+birthmode_families <- list(
+  'k__Bacteria.p__Bacteroidetes.c__Bacteroidia.o__Bacteroidales.f__Bacteroidaceae',
+  'k__Bacteria.p__Firmicutes.c__Clostridia.o__Clostridiales.f__Lachnospiraceae',
+  'k__Bacteria.p__Firmicutes.c__Clostridia.o__Clostridiales.f__Veillonellaceae',
+  'k__Bacteria.p__Proteobacteria.c__Gammaproteobacteria.o__Pasteurellales.f__Pasteurellaceae')
+top20_family_meta$birth_mode <- gsub(x = top20_family_meta$birth_mode,
+                                     pattern = ' ',replacement = '_', fixed = T)
+slideplots <- function(xx) {
+  f__df <- top20_family_meta %>% filter(family == xx)
+  print(xx)
+  f.result <- sliding_spliner(data = f__df, xvar = 'timepoint',
+                              yvar = 'relative_abundance', category = 'birth_mode',
+                              cases = 'baby_id', test_density = 3,
+                              cut_sparse = 7, set_spar = 0.5)
+  sliding_spliner.plot.pvals(f.result$pval_table, xvar = 'timepoint')
+  }
+lapply(birthmode_families, FUN = slideplots)
+```
+
+
+#### Trends in the Bacteroides genus
+They also test the antibiotic effect at the genus level. Is the difference more resolved at Genus vs Family?  
+
+First, prep the dataframe.  
+  
+```{r filter to genus}
+otus_genus <- otus %>% filter(!grepl('s__', otus$OTU_ID) & grepl('g__', otus$OTU_ID))
+# Run the function defined above
+genus_tax_metadata <- flip_split_merge(otus_genus, metadata)
+dim(genus_tax_metadata)
+bacteroides_genus_meta <- genus_tax_metadata %>%
+  gather(key = 'genus', value = 'relative_abundance',
+         13:as.numeric(ncol(genus_tax_metadata))) %>%
+  filter(genus == 
+'k__Bacteria.p__Bacteroidetes.c__Bacteroidia.o__Bacteroidales.f__Bacteroidaceae.g__Bacteroides')
+dim(bacteroides_genus_meta)
+colnames(bacteroides_genus_meta)
+```
+
+Now we can run the splinectomeR test.  
+```{r perumtation test on bacteroides genus}
+Bacteroides_abx_result <- permuspliner(data = bacteroides_genus_meta, xvar = 'timepoint',
+                                       yvar = 'relative_abundance', cases = 'baby_id',
+                                       perms = 999, category = 'antibiotics_y_n')
+```
+Nope!
+  
+#### Does the ratio of Firmicutes to Bacteroidetes change over time?
+Let's look at this ratio across all babies.  
+
+```{r phylum level parsing}
+# Filter and merge with mapping
+otus_phyla <- otus %>% filter(!grepl('c__', otus$OTU_ID) & grepl('p__', otus$OTU_ID))
+phyla_tax_metadata <- flip_split_merge(otus_phyla, metadata)
+
+all_phyla_meta <- phyla_tax_metadata %>% 
+  gather(key = 'phyla', value = 'relative_abundance',
+         13:as.numeric(ncol(phyla_tax_metadata)))
+
+# Now, unfortunately the cases need to be unique factors for the tests to work.
+# So here we will just create a pseudonym for each baby's phylum abundances
+all_phyla_meta$baby_id_phylum <- paste(all_phyla_meta$baby_id,
+                                       all_phyla_meta$phyla, sep = '_')
+head(all_phyla_meta$baby_id_phylum)
+
+# Now, let's use the Phyla as the category, instead of antibiotics
+firm_vs_oides_result <- permuspliner(data = all_phyla_meta, xvar = 'timepoint',
+                      yvar = 'relative_abundance', cases = 'baby_id_phylum',
+                      perms = 999, category = 'phyla',
+                      groups = 'k__Bacteria.p__Bacteroidetes,k__Bacteria.p__Firmicutes',
+                      set_tol = 1e-4)
+plot(firm_vs_oides_result$v1_interpolated,
+     type = 'l', col = 'blue'); lines(firm_vs_oides_result$v2_interpolated,
+                                      type = 'l', col = 'red')
+```
+
+*BEWARE!* Because these are relative abundances! So when the major phylum goes down, and another major phylum goes up in proportion... Hmm... Red flags! In most cases, one **should not** be comparing the relative abundance of two major bugs using the tool like this. What we can do is either look at them individually (Do Bacteroides go up/down? Do Firmicutes?) or measure the ratio and then look at whether that trend is non-zero over time.  
+
+```{r Phylum ratio analysis}
+phyla_tax_metadata_ratio <- phyla_tax_metadata
+phyla_tax_metadata_ratio$firm_to_bact <- (phyla_tax_metadata$k__Bacteria.p__Firmicutes /
+                                    phyla_tax_metadata_ratio$k__Bacteria.p__Bacteroidetes)
+# Test non-zero trend here
+firm_to_bact_result <- trendyspliner(data = phyla_tax_metadata_ratio,
+                                     xvar = 'timepoint', yvar = 'firm_to_bact',
+                                     cases = 'baby_id', mean_center = F)
+# Plot the trend
+p <- ggplot(phyla_tax_metadata_ratio, aes(x=timepoint, y=firm_to_bact)) + 
+  geom_smooth(method = 'loess') +
+  theme_bw() + theme(panel.grid = element_blank()) +
+  ylab('Firmicutes to Bacteroidetes ratio')
+p
+
+# Check the difference between birth modes
+# (antibiotic use not really different, not shown)
+firm_bact_birthmode_result <- permuspliner(data = phyla_tax_metadata_ratio,
+                                           xvar = 'timepoint', yvar = 'firm_to_bact',
+                                           cases = 'baby_id', category = 'birth_mode')
+
+pf <- ggplot(phyla_tax_metadata_ratio, aes(x=timepoint, y=firm_to_bact)) +
+  geom_smooth(method = 'loess') +
+  theme_bw() + theme(panel.grid = element_blank()) +
+  ylab('Firmicutes to Bacteroidetes ratio') +
+  facet_grid(. ~ birth_mode)
+pf
+```
+
+So, the Firmicutes/Bacteroidetes ratio is changing over these years, and presents as a significantly distinct trend between C-section and vaginally born babies (with the limitation of small C-section cohort). A quick test with these functions!  
+  
+Let's look similarly at another ratio that gets attention: Bacteroides vs Prevotella:  
+
+```{r Bacteroides vs Prevotella}
+genus_tax_metadata_ratio <- genus_tax_metadata
+genus_tax_metadata_ratio$prev_bact_ratio <-
+  (genus_tax_metadata$k__Bacteria.p__Bacteroidetes.c__Bacteroidia.o__Bacteroidales.f__Prevotellaceae.g__Prevotella +
+  genus_tax_metadata_ratio$k__Bacteria.p__Bacteroidetes.c__Bacteroidia.o__Bacteroidales.f__.Paraprevotellaceae..g__.Prevotella.) /
+  genus_tax_metadata$k__Bacteria.p__Bacteroidetes.c__Bacteroidia.o__Bacteroidales.f__Bacteroidaceae.g__Bacteroides
+
+prev_bact_result <- trendyspliner(data = genus_tax_metadata_ratio, xvar = 'timepoint',
+                                  yvar = 'prev_bact_ratio', cases = 'baby_id',
+                                  mean_center = F, perms = 999)
+# Plot the trend
+p <- ggplot(genus_tax_metadata_ratio, aes(x=timepoint, y=prev_bact_ratio)) +
+  geom_smooth(method = 'loess') + theme_bw() +
+  theme(panel.grid = element_blank()) + ylab('Prevotella to Bacteroides ratio')
+p
+
+# Check the difference between birth modes (antibiotic use not really different, not shown)
+prev_bact_birthmode_result <- permuspliner(data = genus_tax_metadata_ratio,
+                                           xvar = 'timepoint', yvar = 'prev_bact_ratio',
+                                           cases = 'baby_id', category = 'birth_mode',
+                                           perms = 999)
+
+pf <- ggplot(genus_tax_metadata_ratio, aes(x=timepoint, y=prev_bact_ratio)) +
+  geom_smooth(method = 'loess') + theme_bw() + theme(panel.grid = element_blank()) +
+  ylab('Firmicutes to Bacteroidetes ratio') + facet_grid(. ~ birth_mode)
+pf
+```
+
+Interestingly this ratio does not significantly change in any one coherent direction over time, overall. Here, there is so little Prevotella present, the results are hard to interpret, and they appear to be mostly abundant in the C-section babies--this is what drives the permuspliner test close to significance.  
+
+## Other hypotheses we can test
+  
+#### Does Bifidobacterium abundance look different at early timepoints based on feeding pattern in the hospital?
+
+```{r bifido genus tests}
+bifidobacterium_genus_meta <- genus_tax_metadata %>%
+  gather(key = 'genus', value = 'relative_abundance',
+         13:as.numeric(ncol(genus_tax_metadata))) %>%
+  filter(genus == 
+           'k__Bacteria.p__Actinobacteria.c__Actinobacteria.o__Bifidobacteriales.f__Bifidobacteriaceae.g__Bifidobacterium')
+
+head(bacteroides_genus_meta)
+
+bifido_slider <- sliding_spliner(data = bifidobacterium_genus_meta,
+                                 xvar = 'timepoint', yvar = 'relative_abundance',
+                                 category = 'feeding_in_hospital',
+                                 cases = 'baby_id', test_density = 10, cut_sparse = 7,
+                                 set_spar = 0.5, groups = 'OnlyBreastmilk,mixed')
+sliding_spliner.plot.pvals(bifido_slider$pval_table, xvar = 'timepoint')
+```
+
+Suggests there's something about the period where many of the babies are beginning to wean that is different between these groups.  
+```{r, echo=TRUE}
+mean(as.numeric(metadata$months_end_breastfeeding))
+```
+
+#### Are there differences in Clostridium groups IV and XIVa between the antibiotic +/- groups, as suggested by Fig S8?
+
+I'm including the Faecalibacterium genus as [a member of cluster IV](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3635240/), though it is [not universally included](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3751348/), it appears.  
+
+```{r filter and test clostridium clusters}
+# Define the Genera in these Clostridium clusters (that are present in this dataset)
+clostrid_groups <- c(
+  'k__Bacteria|p__Firmicutes|c__Clostridia|o__Clostridiales|f__Clostridiaceae|g__Clostridium',
+  'k__Bacteria|p__Firmicutes|c__Clostridia|o__Clostridiales|f__Lachnospiraceae|g__Coprococcus',
+  'k__Bacteria|p__Firmicutes|c__Clostridia|o__Clostridiales|f__Lachnospiraceae|g__Dorea',
+  'k__Bacteria|p__Firmicutes|c__Clostridia|o__Clostridiales|f__Lachnospiraceae|g__Lachnospira',
+  'k__Bacteria|p__Firmicutes|c__Clostridia|o__Clostridiales|f__Lachnospiraceae|g__Roseburia',
+  'k__Bacteria|p__Firmicutes|c__Clostridia|o__Clostridiales|f__Lachnospiraceae|g__[Ruminococcus]',
+  'k__Bacteria|p__Firmicutes|c__Clostridia|o__Clostridiales|f__Ruminococcaceae|g__Ruminococcus',
+  'k__Bacteria|p__Firmicutes|c__Clostridia|o__Clostridiales|f__Ruminococcaceae|g__Faecalibacterium')
+# Filter and merge
+otus_clostrid <- otus %>% filter(OTU_ID %in% clostrid_groups)
+clostrid_tax_metadata <- flip_split_merge(otus_clostrid, metadata)
+clostrid_tax_metadata$clostridSum <- 
+  rowSums(x = clostrid_tax_metadata[, 13:ncol(clostrid_tax_metadata)])
+
+colnames(clostrid_tax_metadata)
+
+clostrid_result <- permuspliner(data = clostrid_tax_metadata,
+                                xvar = 'timepoint', yvar = 'clostridSum',
+                                perms = 999, category = 'antibiotics_y_n',
+                                cases = 'baby_id')
+```
+
+Noteably, this is a stronger result than their test (a comparison of relative abundance at 36 months). What's the plot like?  
+
+```{r plot the clostridium results}
+p <- ggplot() + geom_line(aes(x=clostrid_result$v1_spline$x,
+                              y=clostrid_result$v1_spline$y, color = 'blue')) +
+  geom_line(aes(x=clostrid_result$v2_spline$x,
+                y=clostrid_result$v2_spline$y, color = 'red')) +
+  scale_color_manual(labels = c('+ Antibiotics','- Antibiotics'),
+                     values = c('red','blue')) +
+  theme_bw() + theme(panel.grid = element_blank())
+p
+# p2 <- ggplot(clostrid_tax_metadata, aes(x=timepoint,
+#                                         y=clostridSum, color=antibiotics_y_n)) +
+#   geom_smooth(method = 'loess', span = 0.5) +
+#   ylab('summed relative abundance\nClostridium clusters IV and XIVa') +
+#   theme_bw() + theme(panel.grid = element_blank())
+# p2
+```
+
+Interesting - they nearly converge where the authors were testing the difference (36 months). Looking across the time series gives a more complete answer, and in this case it is more powerful as well.  
+Worth noting that if you remove Faecalibacterium, the difference is slightly stronger overall but at 36 months they are much more similar, therefore you would not detect a difference with that timepoint.  
+
+#### Does alpha diversity differ, or change differently, over time?
+First, calculate the Shannon diversity from the OTU table, and add the metadata.  
+```{r alpha diversity}
+alphadiv <- as.data.frame(diversity(t(otus[,2:ncol(otus)]), 'shannon'))
+alphadiv <- tibble::rownames_to_column(alphadiv, var = 'sampleID')
+colnames(alphadiv)[2] <- 'shannon'
+alphadiv <- alphadiv %>% separate(sampleID, c('baby_id', 'timepoint'), sep = '_')
+alphadiv$timepoint <- as.numeric(alphadiv$timepoint)
+alphadiv$shannon <- as.numeric(alphadiv$shannon)
+alphadiv_meta <- merge(metadata, alphadiv, by = 'baby_id')
+```
+  
+Is alpha diversity different over time between antibiotic status or birth mode?  
+```{r test trends in alpha div}
+p <- ggplot(alphadiv_meta, aes(x=timepoint, y=shannon, colour=antibiotics_y_n)) +
+  geom_smooth(method = 'loess') + theme_bw() + theme(panel.grid = element_blank())
+p
+
+p2 <- ggplot(alphadiv_meta, aes(x=timepoint, y=shannon, colour=birth_mode)) +
+  geom_smooth(method = 'loess') + theme_bw() + theme(panel.grid = element_blank())
+p2
+
+alpha_permresult <- permuspliner(data = alphadiv_meta, xvar = 'timepoint',
+                                 yvar = 'shannon', category = 'antibiotics_y_n',
+                                 cases = 'baby_id', perms = 999)
+
+alpha_permresult <- permuspliner(data = alphadiv_meta, xvar = 'timepoint',
+                                 yvar = 'shannon', category = 'birth_mode',
+                                 cases = 'baby_id', perms = 999)
+
+```
+
+It looks like alpha diversity is increasing in these babies, regardless their antibiotic exposure or birth mode, and that increase is fairly similar in rate and shape between these environmental factors.  
+We can also look more finely at the differences at each interval of time.  
+
+```{r sliding splines on alpha div}
+alpha_slide <- sliding_spliner(data = alphadiv_meta, xvar = 'timepoint',
+                               yvar = 'shannon', category = 'birth_mode',
+                               cases = 'baby_id', set_spar = 0.5)
+sliding_spliner.plot.pvals(alpha_slide$pval_table, xvar = 'timepoint')
+```
+  
+Looks like not the case - probably too noisy to be a real difference.  
+
+Is alpha diversity non-linear over time?
+```{r alpha div trends}
+alpha_trendresult_all <- trendyspliner(data = alphadiv_meta, xvar = 'timepoint',
+                                       yvar = 'shannon', cases = 'baby_id',
+                                       perms = 999, mean_center = F)
+
+alpha_trendresult_abx <- trendyspliner(data = alphadiv_meta, xvar = 'timepoint',
+                                       yvar = 'shannon', cases = 'baby_id', perms = 999,
+                                       mean_center = F, category = 'antibiotics_y_n',
+                                       group = 'Y')
+alpha_trendresult_noabx <- trendyspliner(data = alphadiv_meta, xvar = 'timepoint',
+                                         yvar = 'shannon', cases = 'baby_id',
+                                         perms = 999, mean_center = F,
+                                         category = 'antibiotics_y_n', group = 'N')
+```
+  
+Alpha diversity increases significantly in both groups, but the trends are not significantly different over time between antibiotics+/-.  
+
+## Conclusions
+Yassour et al. present a tremendously dense longitudinal study that details the human gut microbiome's complex dynamics over the first three years of life. They also have generated categorical variables with which the microbiome data can be compared by cataloging antibiotic exposure, delivery mode, and feeding patterns.  
+  
+The remaining challenge is a lack of clear methods to directly compare data across multiple individuals and many time points, in particular when those time points are not in sync, without averaging or adding across multiple points, or subsetting and dropping many of the points. In both cases, the longitudinal density is not being leveraged appropriately.  
+  
+In this vignette, we've shown how these `splinectomeR` tools can quickly assess statistical significance by summarizing group data with splines and generating randomly permuted distributions to evaluate the probability that the true magnitude of difference is due to chance. By employing the three test functions, we can explore overall changes in abundances or metrics, and explore longitudinal trends between two categorical groups.  
+  
+The approaches here provide statistical support for proposals the authors have drawn, and allow us to test supplemental hypotheses. Importantly, we are able to perform these tests in a way that takes full advantage of the longitudinal data and maintains the individual observations.
+
+
+
