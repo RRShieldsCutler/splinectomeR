@@ -1,0 +1,121 @@
+---
+title: "Analyzing Chick Weights with splinectomeR"
+author: "Robin Shields-Cutler"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Analyzing Chick Weights with splinectomeR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+## The ChickWeight Dataset  
+Below you will find a simple splinectomeR vignette based on the R dataset called `ChickWeight`.  
+First, make sure that you have the datasets package and the splinectomeR package.  
+```{r load dependencies, message=FALSE, warning=FALSE}
+require(datasets)
+require(ggplot2)
+require(dplyr)
+require(splinectomeR)
+
+head(ChickWeight)  # Check out the structure of the ChickWeight data
+```
+  
+This dataset works well because it is a simple longitudinal study of several diets and their impact on chick body weights. With the `splinectomeR` package, we can test the following hypotheses:
+1. Do the diets produce significantly different weight gain responses?
+1. Are there significant differences along the time course?
+1. Do all diets result in a non-zero weight gain (one would hope)?  
+Conveniently, the `ChickWeight` dataset is already in the ideal dataframe format for splinectomeR, where each row is an observation, and the diets, chick IDs, and weights are defined in individual columns.
+```{r, echo=FALSE}
+colnames(ChickWeight)
+```
+  
+So, in our tests, the `xvar` will be "Time", the `cases` will be the "Chick", the `yvar` will be "weight", and the `category` of interest is the "Diet".
+  
+### Testing for differences between two diets
+To test for a difference between two diets, use the `permuspliner()` function.  
+```{r, error=TRUE, purl=FALSE}
+result <- permuspliner(data = ChickWeight, xvar = 'Time',
+                       yvar = 'weight', cases = 'Chick', category = 'Diet')
+```
+  
+Oh no! The error is telling us there are more than two groups in the category we selected (Diet). If there are only two groups, the function will detect those. If there are more than two (even a single third entry), you must either filter your data or specify which groups with `groups = ...` as a comma-separated string.  
+
+```{r}
+# Default permutations is 999, but we will set to 99 to speed up the code
+permu_result <- permuspliner(data = ChickWeight, xvar = 'Time', yvar = 'weight',
+                             cases = 'Chick', category = 'Diet',
+                             groups = '2,3', perms = 99)
+# If you were to enter the 1,2 without quotes, it would return an error
+# since it interprets groups as character strings not numbers.
+```
+  
+So in this case, there is not a signficant difference between the weight changes of chicks on diet 1 vs diet 2. Let's try another.  
+```{r}
+permu_result <- permuspliner(data = ChickWeight, xvar = 'Time', yvar = 'weight',
+                             cases = 'Chick', category = 'Diet',
+                             groups = '1,4', perms = 99)
+```
+  
+There's a significant result. This means that the overall distance between these two data is greater than expected by chance. You can go back and rerun it with 999 permutations (or more) for a more sensitive p-value.  
+  
+The result contains the reported p-value, the interpolated splines (as (x,y) points) for each group, and the spline objects for each group. These may be useful for plotting the comparisons to visualize the significant difference.  
+```{r}
+p <- ggplot() +
+  geom_line(aes(x=permu_result$v1_interpolated$x, y=permu_result$v1_interpolated$var1,
+                color='blue')) +
+  geom_line(aes(x=permu_result$v2_interpolated$x, y=permu_result$v2_interpolated$var2,
+                color='red')) +
+  xlab('Time') + ylab('weight') + theme(panel.grid = element_blank()) +
+  scale_color_manual(labels = c('group 1', 'group 4'), values = c('blue','red'))
+p
+```
+
+
+### Sliding spline test
+Let's say you are really interested in that diet 1 vs 2 comparison, even though it wasn't statistically significant overall. Perhaps there is a point in time where the weights are actually different, but it gets washed out over the whole timeseries.  
+To test this, you can use the `slidingspliner()` function. The result is a table of p-values, and is most useful when you use the built-in plotting function powered by `ggplot2`.
+
+```{r}
+result <- sliding_spliner(data = ChickWeight, xvar = 'Time', yvar = 'weight',
+                          cases = 'Chick', category = 'Diet', groups = '1,2')
+sliding_spliner.plot.pvals(result$pval, xvar = 'Time')
+```
+  
+The defaul is 100 intervals, but if you have a very long or short timeseries, you might want more or less intervals, respectively. Here you can see what it looks like with just 10 intervals:  
+
+```{r}
+result <- sliding_spliner(data = ChickWeight, xvar = 'Time', yvar = 'weight',
+                          cases = 'Chick', category = 'Diet', groups = '1,2', ints = 10)
+sliding_spliner.plot.pvals(result$pval, xvar = 'Time')
+```
+  
+You'll notice that there is a conventient (if not somewhat biasing) line at _p_ = 0.05, and the y-axis is log-scaled for visual clarity. You can always make your own plot from the results table as well. Here, dots are scaled in size according to the number of original observations that support that interval; that is, the dots become smaller toward the 20 day time point because there are less overall data points in the dataset being used to calculate the splines and resulting p-values there. You can think of it as a quick visual confidence measure.  
+
+## Non-zero trends
+The third major functionality in the `splinectomeR` package is detecting significant non-zero trends through a permutation test, where the null hypothesis is a trend that doesn't differ from the group mean. Here, all of the Chicks are growing, so it is reasonable to predict that all of the diets will produce a non-zero trend.  
+  
+As in the `permuspliner()` test above, you must specify a group to analyze if there are multiple groups.  
+
+```{r}
+result <- trendyspliner(data = ChickWeight, xvar = 'Time', yvar = 'weight', group = '4',
+                        cases = 'Chick', category = 'Diet', perms = 99, mean_center = F)
+```
+  
+You could also quickly run through all four diet variables:  
+```{r}
+diets <- c('1','2','3','4')
+diet_results <- lapply(X = diets,
+                      FUN = function(xx) trendyspliner(data = ChickWeight, xvar = 'Time',
+                                                      yvar = 'weight', group = xx,
+                                                      cases = 'Chick', category = 'Diet',
+                                                      perms = 99, mean_center = F))
+```
+
+
+Of note, this test is area-based, so it is tolerant to non-linear non-zero trends. Also, in some data, the individual cases may have a range of starting points that could confound this trend; in these situations you can mean-center the cases prior to analysis with the `mean_center = TRUE` argument.  
+  
+(Tip: if you have a dataframe with only one group, you might not have a "category" column at all. To satisfy this argument, you can add a dummy column with `my_data_frame$dummy <- my_group`. Then include `category = 'dummy'` in the function call.)
+
+
