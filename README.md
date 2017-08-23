@@ -10,7 +10,7 @@ To install from GitHub, use the `devtools` package. Once you have that installed
 > library(splinectomeR)
 ```
   
-There is also a command line executable version (still requires R package installation); instructions located [below](#commandline).  
+There is also a command line executable version (still requires R package installation); instructions located [below](#The-command-line-version).  
   
 #### Permuspliner
 This function tests for a greater-than-chance difference between two groups of interest over the x variable (e.g. time). Input data is a dataframe with the following columns at minimum:  
@@ -88,7 +88,7 @@ sliding_spliner.plot.splines(result$spline_longform, category = 'Diet',
   
 ***
   
-## The command line version {#commandline}
+## The command line version
 This still requires R and the same dependencies, but can be run from the command line. It will generate and save formatted plots if you do desire. These executable scripts are wrappers for the R package functions, so the tests being run are identical, just a different user interface.  
 
 ### Installation
