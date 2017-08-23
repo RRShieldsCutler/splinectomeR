@@ -9,6 +9,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, echo=FALSE}
+knitr::opts_chunk$set(fig.width = 5, fig.height = 4, fig.align = "center")
+```
+
 
 ## The ChickWeight Dataset  
 Below you will find a simple splinectomeR vignette based on the R dataset called `ChickWeight`.  
