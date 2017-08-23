@@ -165,7 +165,7 @@ unique(top_family_meta$family)
 ```
 
 Now we can plot!  
-```{r Fig 1B remake}
+```{r Fig 1B remake, fig.height = 4, fig.width = 7}
 plot.df <- top_family_meta
 plot.df <- separate(plot.df, col = family, sep = 'f__', remove = T,
                     into = c('uplevel', 'family'))
@@ -371,7 +371,7 @@ plot(firm_vs_oides_result$v1_interpolated,
 
 *BEWARE!* Because these are relative abundances! So when the major phylum goes down, and another major phylum goes up in proportion... Hmm... Red flags! In most cases, one **should not** be comparing the relative abundance of two major bugs using the tool like this. What we can do is either look at them individually (Do Bacteroides go up/down? Do Firmicutes?) or measure the ratio and then look at whether that trend is non-zero over time.  
 
-```{r Phylum ratio analysis}
+```{r Phylum ratio analysis, fig.width=7, fig.height=4}
 phyla_tax_metadata_ratio <- phyla_tax_metadata
 phyla_tax_metadata_ratio$firm_to_bact <- (phyla_tax_metadata$k__Bacteria.p__Firmicutes /
                                     phyla_tax_metadata_ratio$k__Bacteria.p__Bacteroidetes)
@@ -404,7 +404,7 @@ So, the Firmicutes/Bacteroidetes ratio is changing over these years, and present
   
 Let's look similarly at another ratio that gets attention: Bacteroides vs Prevotella:  
 
-```{r Bacteroides vs Prevotella}
+```{r Bacteroides vs Prevotella, fig.width=7, fig.height=4}
 genus_tax_metadata_ratio <- genus_tax_metadata
 genus_tax_metadata_ratio$prev_bact_ratio <-
   (genus_tax_metadata$k__Bacteria.p__Bacteroidetes.c__Bacteroidia.o__Bacteroidales.f__Prevotellaceae.g__Prevotella +

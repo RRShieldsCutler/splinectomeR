@@ -5,6 +5,8 @@ These functions are designed to provide statistical analyses in _real_ longitudi
   
 For information on installation of the package from GitHub, and a basic outline of the functions, [go here](installation_introduction.html).  
   
+Happy splining, and have a _splinedid_ day!
+  
 #### Vignettes
 There are two vignettes available for this package:
 1. [Chick Weights](chickweights_web.html) - a simple exploration using the R dataset `ChickWeight`.
@@ -12,10 +14,10 @@ There are two vignettes available for this package:
   
 ***  
   
-
+[^1]: [Yassour et al. Natural history of the infant gut microbiome and impact of antibiotic treatment on bacterial strain diversity and stability. 8, 343RA81 (2016)](http://stm.sciencemag.org/content/8/343/343ra81.short)  
+  
+  
+  
 #### Disclaimer
 Licensed under GPL-3. As such, the `splinectomer` package is freely offered, without any warrantee or guarantee. It may be used, redistributed, or modified for non-commercial purposes with appropriate citation of the original work. You, the user, are solely responsible for verifying the legitimacy of your results.  
   
-Happy splining!  
-  
-[^1]: Yassour et al. Natural history of the infant gut microbiome and impact of antibiotic treatment on bacterial strain diversity and stability. 8, 343RA81 (2016)
