@@ -146,7 +146,7 @@ Try it out! A few examples to get you started:
 ```shell
 # Compare diets 1 and 2 overall (99 permutations for faster run):
 
-permusplines.R -i ChickWeight.txt -p Chick -c Diet -x Time -y weight --perms=99 --plot=chicks_1v2.png --groups=1,2
+permusplines.R -i ChickWeight.txt -p Chick -c Diet -x Time -y weight --perms=99 --plot_path=chicks_1v2.png --groups=1,2
 
 # Should return a non-significant pvalue. But the separation isn't consistent across the time series... Try a sliding spline:
 
