@@ -180,7 +180,8 @@ p
 ```
 
 Alright! We included a few more families, and the legend is completely useless, but the plot is a very close match to Figure 1B.  
-### Finally: Applying the splinectomeR package
+
+### Finally, applying the splinectomeR package
 
 The `splinectomeR` package allows us to do a large number of statistical tests from this datatable using the longitudinal data. In the paper, statistical tests aren't performed across the intact longitudinal data, instead relying on visual comparisons of stream plots, for example, or on factors derived from the data, such as comparing consecutive-sample beta-diversity. With `splinectomeR`, we can quickly test whether abundance of a taxonomic unit (Family, Genus, etc) is significantly different across the time series between babies that had antibiotics and those who didn't, or male/female babies, birth mode, etc. We can also ask whether the abundance of a particular taxonomic unit is going up or down over time in a particular group (antibiotic exposed, female, etc).  
 
