@@ -10,7 +10,7 @@ To install from GitHub, use the `devtools` package. Once you have that installed
 > library(splinectomeR)
 ```
   
-There is also a command line executable version (still requires R package installation); instructions located [below](#The-command-line-version).  
+There is also a command line executable version (still requires R package installation); instructions located [below](##the-command-line-version).
   
 #### Permuspliner
 This function tests for a greater-than-chance difference between two groups of interest over the x variable (e.g. time). Input data is a dataframe with the following columns at minimum:  
