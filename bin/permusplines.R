@@ -24,15 +24,15 @@ option_list = list(
               help='If >2 groups in category, the two of interest:
                 comma-delimited (e.g. groups=Healthy,Sick)',
               default=NA, type = 'character'),
-  make_option(c('-x', '--x_variable'),
+  make_option(c('-x', '--x_var'),
               help='REQUIRED: The independent variable (e.g. time);
                 must be column header',
               default=NA, type = 'character'),
-  make_option(c('-y', '--y_variable'),
+  make_option(c('-y', '--y_var'),
               help='REQUIRED: The response variable;
                 must be acolumn header',
               default=NA, type = 'character'),
-  make_option(c('-p', '--unit_id'),
+  make_option(c('-s', '--cases'),
               help='REQUIRED: The column header for your grouping
                 (e.g. Patient_ID, User_Name, etc)',
               default=NA, type = 'character'),
@@ -50,30 +50,30 @@ option_list = list(
                 default is calculated from data',
               default=NULL),
   make_option(c('--plot_path'),
-              help='Plot the data too! Provide a filename/path,
+              help='Plot the data too. Provide a filename/path,
                 with extension explicitly in the name: pdf, png,
                 tiff, jpg, bmp, eps, or ps.',
               default=NA, type = 'character')
 )
-opt = parse_args(OptionParser(usage=usage, option_list=option_list))
+opt <- parse_args(OptionParser(usage=usage, option_list=option_list))
 
-if (is.na(opt$input) | is.na(opt$category) | is.na(opt$x_variable) |
-    is.na(opt$y_variable) | is.na(opt$unit_id)) {
+if (is.na(opt$input) | is.na(opt$category) | is.na(opt$x_var) |
+    is.na(opt$y_var) | is.na(opt$unit_id)) {
   stop('Missing required parameters. See usage and options (--help)')
 }
 
 # Parse command line
-infile = opt$input  # tsv file with data in long form
-category = opt$category  # the column header label for the two groups
-groups = opt$groups  # the two groups of interest, if column has >2
-xvar = opt$x_variable  # the time series label
-yvar = opt$y_variable  # the response variable label
-cases = opt$unit_id  # the header label defining the individuals (patients, etc)
-perms = as.numeric(opt$perms)  # default 999
-cut_low = opt$cut
-spar_param = opt$spar # default NULL
-ints = opt$intervals 
-plot_path = opt$plot  # name of the plot file.png
+infile <- opt$input  # tsv file with data in long form
+category <- opt$category  # the column header label for the two groups
+groups <- opt$groups  # the two groups of interest, if column has >2
+xvar <- opt$x_var  # the time series label
+yvar <- opt$y_var  # the response variable label
+cases <- opt$cases  # the header label defining the individuals (patients, etc)
+perms <- as.numeric(opt$perms)  # default 999
+cut_low <- opt$cut
+spar_param <- opt$spar # default NULL
+ints <- opt$intervals 
+plot_path <- opt$plot  # name of the plot file.png
 
 # TODO: Wrap the package function
 
@@ -111,8 +111,13 @@ if (!is.na(plot_path)) {
                            color=as.character(plot.df[,category]))) +
     geom_point() + geom_smooth(span = spar_param, method = 'loess') + xlab(xvar) + ylab(yvar) +
     scale_color_manual(name=category, values = c("#0072B2","#D55E00")) +
-    theme_bw() + theme(panel.background = element_blank(), panel.grid = element_blank())
-  # p
+    theme_bw() +
+    theme(panel.background = element_blank(), panel.grid = element_blank(),
+          panel.border = element_blank(),
+          axis.text = element_text(colour = 'black'), 
+          axis.line = element_line(colour = 'black'),
+          axis.ticks = element_line(colour = 'black'))
+  
   ggsave(plot_path, height = 3.5, width = 4, units = 'in', dpi = 600)
   cat(paste('Plot saved\n'))
 }
