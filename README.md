@@ -124,16 +124,28 @@ Given a longitudinal dataset, permusplinectomy reports a p-value for a binary ca
 The p-value is calculated by permutation of the categorical label across the individuals, and non-parametrically measuring the likelihood of the true area between the categories being a result of random chance.
 ```shell
 # Sample run command
-permusplines.R -i data_table.txt -x Years -y Blood_glucose -c Disease_status -p PATIENT_ID --perms 999
+permusplines.R -i data_table.txt -x Years -y Blood_glucose -c Disease_status -s PATIENT_ID --perms 999
 
 # To see usage and all commandline options
 permusplines.R --help
 ```
+  
+### trendysplines.R
+This tests whether the data you've selected to analyze follow a non-zero trend over the longitudinal axis. It does this by measuring the area between the group baseline and the group's spline over a set number of intervals. It then permutes (default 999 permutations) to find out whether the consistent change away from the baseline can be explained due to random chance, and reports the p-value. This can be a positive or negative trend; use the `--plot_path=my_plot.png` argument to visually assess the trend. Because in many cases, the individuals' starting points will vary greatly, there is a `--mean_center=T` option, which simply adjusts all the individuals' data to the same mean value in the y-axis before analysis; this can be useful for variable datasets, such as those from a human population.
+
+```shell
+# Sample run command with plot
+trendysplines.R -i data_table.txt -x Years -y HbA1c -c Disease_status -s PATIENT_ID --group=diabetes --perms 9999 --mean_center=FALSE --plot_path=my_plot.pdf
+
+# To see usage and all commandline options
+trendyplines.R --help
+```
+
 ### sliding_splines.R
 Given the same dataset, the sliding_spline_test treats each individual separately, effectively converting their time series into a dense time series through extrapolation of a spline. Each interval (default = 100) is then tested for non-parametric significance between the two groups, provided there are enough data points (default = 3+ per group). The script produces three output files: a plot (png) of the splines for each individual, a plot of the negative log of p-values over the independent (x) variable where the size of the points is scaled by the number of data points contributing to that test (thicker line = greater n at that x), and a table of p-value at each interval. The user may provide a file prefix for each of these files, which are saved in the current working directory.  
 ```shell
 # Sample run command
-sliding_splines.R -i data_table.txt -x Years -y Blood_glucose -c Disease_status -p PATIENT_ID --spline_intervals=200 --prefix=Foo_
+sliding_splines.R -i data_table.txt -x Years -y Blood_glucose -c Disease_status -s PATIENT_ID --spline_intervals=200 --prefix=Foo_
 
 # To see usage and all command line options
 sliding_splines.R --help
@@ -146,11 +158,11 @@ Try it out! A few examples to get you started:
 ```shell
 # Compare diets 1 and 2 overall (99 permutations for faster run):
 
-permusplines.R -i ChickWeight.txt -p Chick -c Diet -x Time -y weight --perms=99 --plot=chicks_1v2.png --groups=1,2
+permusplines.R -i ChickWeight.txt -s Chick -c Diet -x Time -y weight --perms=99 --plot=chicks_1v2.png --groups=1,2
 
 # Should return a non-significant pvalue. But the separation isn't consistent across the time series... Try a sliding spline:
 
-sliding_splines.R -i ChickWeight.txt -p Chick -c Diet -x Time -y weight --groups=1,2 --prefix=chicks_1vs2_
+sliding_splines.R -i ChickWeight.txt -s Chick -c Diet -x Time -y weight --groups=1,2 --prefix=chicks_1vs2_
 
 # Look at the pvalues plot...
 # Cool! So, this suggests that the diets may lead to significantly different 
