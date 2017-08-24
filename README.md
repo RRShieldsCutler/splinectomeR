@@ -1,5 +1,6 @@
 # splinectomeR
 #### R package of spline-based statistical analysis tools for longitudinal data
+[Explore on the splinectomeR website](https://rrshieldscutler.github.io/splinectomeR/)
 ***
 These functions are designed to provide statistical analyses in _real_ longitudinal data, which may be missing timepoints, possess limited data at some timepoints, have noisy biological variability, and variable numbers of observations per individual being measured. Comparisons can be made between two groups or within a single group for a non-zero change over the independent axis; both return a p-value based on a randomly permuted distribution of the real data. There is also a function for measuring significant differences at intervals across the entire x series (e.g. time) by interpolating splines from the original data.
 
@@ -10,7 +11,7 @@ To install from GitHub, use the `devtools` package. Once you have that installed
 > library(splinectomeR)
 ```
   
-There is also a command line executable version (still requires R package installation); instructions located [below](#The-command-line-version).  
+There is also a command line executable version (still requires R package installation); instructions located [below](#the-command-line-version).
   
 #### Permuspliner
 This function tests for a greater-than-chance difference between two groups of interest over the x variable (e.g. time). Input data is a dataframe with the following columns at minimum:  
@@ -158,7 +159,7 @@ Try it out! A few examples to get you started:
 ```shell
 # Compare diets 1 and 2 overall (99 permutations for faster run):
 
-permusplines.R -i ChickWeight.txt -s Chick -c Diet -x Time -y weight --perms=99 --plot=chicks_1v2.png --groups=1,2
+permusplines.R -i ChickWeight.txt -s Chick -c Diet -x Time -y weight --perms=99 --plot_path=chicks_1v2.png --groups=1,2
 
 # Should return a non-significant pvalue. But the separation isn't consistent across the time series... Try a sliding spline:
 
