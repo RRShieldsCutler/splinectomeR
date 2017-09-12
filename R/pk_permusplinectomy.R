@@ -31,9 +31,7 @@ permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
                          cases = NA, groups = NA, perms = 999, set_spar = NULL,
                          cut_low = NA, ints = 1000, quiet = FALSE, 
                          set_tol = 1e-4, cut_sparse = 4) {
-  
-  require(dplyr)
-  
+
   reqs = c(data, category, xvar, yvar, cases)
   if (any(is.na(reqs))) {
     stop('Missing required parameters. Run ?permusplinr to see help docs')
@@ -68,8 +66,8 @@ permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   }
   
   # The experimentally reported response
-  df_v1 <- in_df %>% filter(in_df[, category] == v1 & !is.na(in_df[, xvar]))
-  df_v2 <- in_df %>% filter(in_df[, category] == v2 & !is.na(in_df[, xvar]))
+  df_v1 <- in_df[in_df[, category] %in% c(v1) & !is.na(in_df[, xvar]), ]
+  df_v2 <- in_df[in_df[, category] %in% c(v2) & !is.na(in_df[, xvar]), ]
   if (length(df_v1[, xvar]) < cut_sparse | length(df_v2[, xvar]) < cut_sparse) {
     stop('Not enough data in each group to fit spline')
   }
@@ -94,12 +92,12 @@ permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   # Define the permutation function
   case_shuff <- 'case_shuff'
   .spline_permute <- function(randy, cases, category, xvar, yvar) {
-    randy_meta <- randy %>% distinct_(cases, .keep_all = T)
+    randy_meta <- randy[!duplicated(randy[, cases]), ]
     randy_meta$case_shuff <- sample(randy_meta[, category])
-    randy_meta <- randy_meta %>% select_(cases, case_shuff)
+    randy_meta <- randy_meta[, c(cases, case_shuff)]
     randy <- merge(randy, randy_meta, by = cases, all = T)
-    randy_v1 <- filter(randy, case_shuff == v1 & !is.na(randy[,xvar]))
-    randy_v2 <- filter(randy, case_shuff == v2 & !is.na(randy[,xvar]))
+    randy_v1 <- randy[randy[, case_shuff] %in% c(v1) & !is.na(randy[, xvar]), ]
+    randy_v2 <- randy[randy[, case_shuff] %in% c(v2) & !is.na(randy[, xvar]), ]
     randy_v1_spl <- with(randy_v1,
                         smooth.spline(x=randy_v1[, xvar], y=randy_v1[, yvar],
                                       spar = set_spar, tol = set_tol))
@@ -122,9 +120,10 @@ permuspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   }
   
   # Run the permutation over desired number of iterations
+  in_rand <- rbind(df_v1, df_v2)
   permuted <- list()
   permuted <- replicate(perms, 
-                       .spline_permute(randy = in_df, cases, category, xvar, yvar))
+                       .spline_permute(randy = in_rand, cases, category, xvar, yvar))
   pval <- (sum(permuted >= as.numeric(real_area)) + 1) / (perms + 1)
   
   # Return the p-value
