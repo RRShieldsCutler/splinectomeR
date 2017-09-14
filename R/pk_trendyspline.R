@@ -38,7 +38,6 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
                          cases = NA, group = NA, mean_center = TRUE, perms = 999, set_spar = NULL,
                          cut_low = NA, ints = 1000, quiet = FALSE) {
   
-  require(dplyr)
   
   reqs = c(data, xvar, yvar, cases)
   if (any(is.na(reqs))) {
@@ -62,10 +61,9 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
     } else {
       v1 <- group
     }
-    df <- df %>% filter(df[, category] == v1)
+    df <- df[df[, category] %in% c(v1), ]
   }
-  
-  df <- df %>% filter(!is.na(df[, xvar]))
+  df <- df[!is.na(df[, xvar]), ]
   
   if (!is.na(cut_low)) {
     cut_low <- as.numeric(cut_low)
@@ -125,7 +123,7 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   # Define the permutation function
   y_shuff <- 'y_shuff'
   .spline_permute <- function(randy, cases, xvar, yvar, permuted) {
-    randy.meta <- randy %>% select_(cases, xvar)
+    randy.meta <- randy[, c(cases, xvar)]
     randy.meta$y_shuff <- sample(randy[, yvar])
     randy.spl <- with(randy.meta, smooth.spline(x = randy.meta[, xvar],
                                               y = randy.meta$y_shuff,
