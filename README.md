@@ -110,7 +110,6 @@ These scripts have been developed and tested in R version 3.3.1 on Mac OSX. Curr
 * The splinectomeR package
 * Required for the permusplineR package:
   + devtools
-  + dplyr
   + ggplot2
   + reshape2
 * For the command line versions:

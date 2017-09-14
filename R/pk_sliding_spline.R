@@ -34,7 +34,6 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
                             cases = NA, groups = NA, set_spar = NULL,
                             cut_sparse = 4, test_density = 3, ints = 100, quiet = FALSE) {
   
-  require(dplyr)
   require(reshape2)
   
   reqs <- c(data, xvar, yvar, cases, category)
@@ -87,9 +86,8 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   xrang <- seq(from = x.min, to = x.max, by = ((x.max - x.min) / (ints - 1)))
   
   # Save the group labels for each individual/unit
-  df.groups <- df %>% 
-              distinct_(cases, .keep_all = T) %>% 
-              select_(cases, category)
+  df.groups <- df[!duplicated(df[, cases]), ]
+  df.groups <- df.groups[, c(cases, category)]
   
   # Generate splines for each individual
   spl.table <- setNames(data.frame(xrang), c('x'))
@@ -105,9 +103,12 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   }
   
   # Prepare the spline table for statistical testing
-  spl.table.p <- tibble::column_to_rownames(df = spl.table, var = 'x')
+  # spl.table.p <- tibble::column_to_rownames(df = spl.table, var = 'x')
+  spl.table.p <- spl.table
+  rownames(spl.table.p) <- spl.table.p$x; spl.table.p$x <- NULL
   spl.table.p <- as.data.frame(t(spl.table.p))
-  spl.table.p <- tibble::rownames_to_column(spl.table.p, var = cases)
+  # spl.table.p <- tibble::rownames_to_column(spl.table.p, var = cases)
+  spl.table.p[, cases] <- rownames(spl.table.p); rownames(spl.table.p) <- NULL
   spl.table.p <- merge(spl.table.p, df.groups, by = cases, all = T)
   
   spline.table <- spl.table.p
