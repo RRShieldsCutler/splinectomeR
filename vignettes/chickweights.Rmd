@@ -20,7 +20,6 @@ First, make sure that you have the datasets package and the splinectomeR package
 ```{r load dependencies, message=FALSE, warning=FALSE}
 require(datasets)
 require(ggplot2)
-require(dplyr)
 require(splinectomeR)
 
 head(ChickWeight)  # Check out the structure of the ChickWeight data
