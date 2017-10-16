@@ -90,7 +90,7 @@ sliding_spliner.plot.splines(result$spline_longform, category = 'Diet',
 ***
   
 ## The command line version
-This still requires R and the same dependencies, but can be run from the command line. It will generate and save formatted plots if you do desire. These executable scripts are wrappers for the R package functions, so the tests being run are identical, just a different user interface.  
+This still requires splinectomeR installed in R and the same dependencies, but can be run from the command line. It will generate and save formatted plots if you do desire. These executable scripts are wrappers for the R package functions, so the tests being run are identical, just a different user interface.  
 
 ### Installation
 You can clone the GitHub repository, then add the bin directory to your path for easiest execution.
@@ -106,7 +106,7 @@ chmod +x script_name.R
   
 ### Dependencies
 These scripts have been developed and tested in R version 3.3.1 on Mac OSX. Currently, the following R packages are required:
-```shell
+
 * The splinectomeR package
 * Required for the permusplineR package:
   + devtools
@@ -114,7 +114,7 @@ These scripts have been developed and tested in R version 3.3.1 on Mac OSX. Curr
   + reshape2
 * For the command line versions:
   + optparse
-```
+
 ***
   
 ### How to use
