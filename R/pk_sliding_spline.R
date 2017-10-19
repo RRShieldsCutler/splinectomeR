@@ -178,7 +178,8 @@ sliding_spliner.plot.splines <- function(plot.spline.data, category = 'category'
     xlab(xvar) + ylab(yvar) +
     theme_bw() + theme(legend.position='right',
                        plot.background = element_rect(color = 'white'),
-                       panel.grid = element_blank())
+                       panel.grid = element_blank(),
+                       axis.text = element_text(color = 'black'))
 }
 
 #' @title Plot sliding spliner p-values
@@ -207,6 +208,7 @@ sliding_spliner.plot.pvals <- function(data, xvar = 'xvar') {
     scale_y_continuous(trans = scales::log10_trans()) +
     theme_bw() + theme(legend.position='none',
                        plot.background = element_rect(color = 'white'),
-                       panel.grid = element_blank())
+                       panel.grid = element_blank(),
+                       axis.text = element_text(color = 'black'))
 }
 
