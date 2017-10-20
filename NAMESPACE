@@ -2,6 +2,7 @@
 
 export(permuspliner)
 export(permuspliner.plot.permdistance)
+export(permuspliner.plot.permsplines)
 export(sliding_spliner)
 export(sliding_spliner.plot.pvals)
 export(sliding_spliner.plot.splines)

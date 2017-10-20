@@ -15,5 +15,12 @@ permuspliner.plot.permdistance(data, xlabel = NULL)
 Compare the permuted distances to the true distance. Requires permuspliner run with the "retain_perm" option.
 }
 \examples{
+distplot <- permuspliner.plot.permdistance(results, xlabel='Time')
+
+# View the plot
+distplot
+
+# Save the plot as PNG file
+ggsave(distplot, file = 'my_plot.png', dpi=300, height=4, width=4)
 
 }

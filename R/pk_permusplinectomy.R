@@ -174,16 +174,23 @@ permuspliner <- function(data, xvar = NULL, yvar = NULL, category = NULL,
   if (quiet == FALSE) {
     cat(paste('\np-value =', round(pval, digits = 5), '\n\n'))
   }
+  v1_data <- df_v1; v2_data <- df_v2
+  v1_data[, category] <- droplevels(v1_data[, category])
+  v2_data[, category] <- droplevels(v2_data[, category])
+  
+  # Return the results list
   if (retain_perm == TRUE) {
     result <- list("pval" = pval,
                    "v1_interpolated" = v1_spl_f, "v2_interpolated" = v2_spl_f,
                    "v1_spline" = df_v1_spl, "v2_spline" = df_v2_spl,
                    "permuted_splines" = perm_output$perm_retainer,
-                   "true_distance" = real_spl_dist)
-  } else {
+                   "true_distance" = real_spl_dist,
+                   "v1_data" = v1_data, "v2_data" = v2_data)
+  } else if (retain_perm == FALSE) {
     result <- list("pval" = pval,
                    "v1_interpolated" = v1_spl_f, "v2_interpolated" = v2_spl_f,
-                   "v1_spline" = df_v1_spl, "v2_spline" = df_v2_spl)
+                   "v1_spline" = df_v1_spl, "v2_spline" = df_v2_spl,
+                   "v1_data" = v1_data, "v2_data" = v2_data)
   }
   return(result)
 }
@@ -195,7 +202,14 @@ permuspliner <- function(data, xvar = NULL, yvar = NULL, category = NULL,
 #' @param xlabel Name for the x axis in the plot
 #' @export
 #' @examples 
-#'
+#' distplot <- permuspliner.plot.permdistance(results, xlabel='Time')
+#' 
+#' # View the plot
+#' distplot
+#' 
+#' # Save the plot as PNG file
+#' ggsave(distplot, file = 'my_plot.png', dpi=300, height=4, width=4)
+#' 
 
   # Plot the distributions
 permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
@@ -207,13 +221,71 @@ permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
   dists$x.par <- rownames(dists); rownames(dists) <- NULL
   true_dist <- data['true_distance'][[1]]
   true_dist <- true_dist[, c(1,4)]
-  dists <- melt(dists, id.vars = 'x.par', variable.name = 'permutation', value.name = 'permuted_distance')
+  dists <- melt(dists, id.vars = 'x.par', variable.name = 'permutation',
+                value.name = 'permuted_distance')
   p <- ggplot() +
-    geom_line(data=dists, aes(x=as.numeric(x.par), y=as.numeric(permuted_distance), group=factor(permutation)), 
-              color='grey75', alpha=0.5) +
-    geom_line(data=true_dist, aes(x=as.numeric(x), y=as.numeric(abs.distance)), color='red', size=1.5) +
+    geom_line(data=dists, aes(x=as.numeric(x.par), y=as.numeric(permuted_distance),
+                              group=factor(permutation)), 
+              color='black', alpha=0.2, size=1) +
+    geom_line(data=true_dist, aes(x=as.numeric(x), y=as.numeric(abs.distance)),
+              color='red', size=1.5) +
     theme_classic() + theme(axis.text = element_text(color='black')) +
     xlab(xlabel) + ylab('group spline distance')
+  p
+}
+
+
+#' @title Plot permuted splines along the real data
+#' @description Compare how the permuted splines fit with the real data. Provides visual support for p values.
+#' @rdname permuspliner.plot.permsplines
+#' @param data The results object from the permuspliner function
+#' @param xvar Name (as string) of the longitudinal x variable in the data
+#' @param yvar Name (as string) of the response/y variable in the data
+#' @export
+#' @examples 
+#' permsplot <- permuspliner.plot.permsplines(results, xvar='Time', yvar='Weight')
+#' 
+#' # View the plot
+#' permsplot
+#' 
+#' # Save the plot as PNG file
+#' ggsave(permsplot, file = 'my_plot.png', dpi=300, height=4, width=4)
+#' 
+
+permuspliner.plot.permsplines <- function(data, xvar=NULL, yvar=NULL) {
+  if (is.null(data) | is.null(xvar) | is.null(yvar)) {
+    stop('Missing required arugments.')
+  }
+  require(ggplot2)
+  require(reshape2)
+  if (is.null(xlabel)) xlabel <- 'longitudinal parameter'
+  permsplines <- data['permuted_splines'][[1]]
+  permsplines <- permsplines[, grep('perm', colnames(permsplines))]
+  permsplines$x.par <- rownames(permsplines); rownames(permsplines) <- NULL
+  permsplines <- melt(permsplines, id.vars = 'x.par', variable.name = 'permutation',
+                      value.name = 'y.par')
+  # permsplines$group <- NA
+  # permsplines$group[grep('v1', permsplines$permutation)] <- 'Group_1'
+  # permsplines$group[grep('v2', permsplines$permutation)] <- 'Group_2'
+  # permsplines_1 <- permsplines[permsplines$group=='Group_1', ]
+  # permsplines_2 <- permsplines[permsplines$group=='Group_2', ]
+  true_v1 <- data['v1_data'][[1]]
+  spar_v1 <- data['v1_spline'][[1]]$spar
+  true_v2 <- data['v2_data'][[1]]
+  spar_v2 <- data['v2_spline'][[1]]$spar
+  p <- ggplot() +
+    geom_line(data=permsplines, aes(x=as.numeric(x.par), y=as.numeric(y.par),
+                                      group=factor(permutation)), color='black', alpha=0.1, size=1.2) +
+    # geom_line(data=permsplines_2, aes(x=as.numeric(x.par), y=as.numeric(y.par),
+    #                                   group=factor(permutation)), color='light blue', alpha=0.4, size=0.5) +
+    geom_smooth(aes(x=as.numeric(true_v1[, xvar]), y=as.numeric(true_v1[, yvar])),
+                color='red',
+                size=1.5, span = spar_v1, method='loess', show.legend = F, se=F) +
+    geom_smooth(aes(x=as.numeric(true_v2[, xvar]), y=as.numeric(true_v2[, yvar])),
+                color='blue', 
+                size=1.5, span = spar_v2, method='loess', show.legend = F, se=F) +
+        theme_classic() + theme(axis.text = element_text(color='black')) +
+    xlab(xvar) + ylab(yvar)
   p
 }
 
