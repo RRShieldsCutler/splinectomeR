@@ -55,7 +55,7 @@ permuspliner <- function(data, xvar = NULL, yvar = NULL, category = NULL,
     }
     v1 <- unique(in_df[, category])[1]
     v2 <- unique(in_df[, category])[2]
-  } else (!is.null(groups)) {
+  } else if (!is.null(groups)) {
     v1 <- strsplit(groups, ',')[[1]][1]
     v2 <- strsplit(groups, ',')[[1]][2]
   }
