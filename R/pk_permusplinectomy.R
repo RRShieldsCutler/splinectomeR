@@ -14,6 +14,7 @@
 #' @param groups If more than two groups, the two groups to compare.
 #' @param perms The number of permutations to generate
 #' @param retain_perm Retain permuted spline data for permutation confidence interval plotting (default FALSE for speed)
+#' @param test_direction Test whether the groups are significantly 'more' or significantly 'less' distinct than expected by random chance. Default is 'more'.
 #' @param set_spar Set the spar parameter for splines
 #' @param set_tol In rare cases, must manually set the tol parameter (default 1e-4)
 #' @param cut_low Remove individual cases with fewer than _ observations
@@ -30,23 +31,17 @@
 
 permuspliner <- function(data, xvar = NULL, yvar = NULL, category = NULL,
                          cases = NULL, groups = NULL, perms = 999, retain_perm = FALSE,
-                         set_spar = NULL, cut_low = NA, ints = 1000, quiet = FALSE, 
-                         set_tol = 1e-4, cut_sparse = 4) {
+                         test_direction = 'more', set_spar = NULL, cut_low = NA,
+                         ints = 1000, quiet = FALSE, set_tol = 1e-4, cut_sparse = 4) {
 
   # reqs = c(data, category, xvar, yvar, cases)
-  if (missing(data) | missing(category) | missing(xvar) | missing(yvar) | missing(cases)) {
-    stop('Missing required parameters. Run ?permusplinr to see help docs')
+  if (is.null(data) | is.null(category) | is.null(xvar) | is.null(yvar) | is.null(cases)) {
+    stop('Missing required parameter(s). Run ?permuspliner to see help docs')
   }
   
-  # Set the defaults if not given
-  # if (is.na(perms)) perms = 999
-  # retain_perm = FALSE
-  # set_spar = NULL
-  # cut_low = NA
-  # ints = 1000
-  # quiet = FALSE
-  # set_tol = 1e-4
-  # cut_sparse = 4
+  if ((test_direction == 'more' | test_direction == 'less') == FALSE) {
+    stop('Error in test direction option: must be either "more" or "less"')
+  }
   
   perms = as.numeric(perms)
   ints = as.numeric(ints)
@@ -54,7 +49,7 @@ permuspliner <- function(data, xvar = NULL, yvar = NULL, category = NULL,
   groups = as.character(groups)
   
   in_df <- data
-  if (is.na(groups)) {
+  if (is.null(groups)) {
     if (length(unique(in_df[, category])) > 2) {
       stop('More than two groups in category column. Define groups with (groups = "Name1,Name2")')
     }
@@ -100,12 +95,6 @@ permuspliner <- function(data, xvar = NULL, yvar = NULL, category = NULL,
   real_spl_dist$abs.distance <- abs(real_spl_dist$var1 - real_spl_dist$var2)
   real_area <- sum(real_spl_dist$abs.distance) / ints
   
-  # Track the permuted splines in order to plot them with CI
-  .permuted_spline_tracker <- function(spl_dist, permuted_table) {
-    
-  }
-  
-  
   # Define the permutation function
   case_shuff <- 'case_shuff'
   .spline_permute <- function(randy) {
@@ -130,22 +119,25 @@ permuspliner <- function(data, xvar = NULL, yvar = NULL, category = NULL,
     randy_v2_fit <- data.frame(predict(randy_v2_spl, xx))
     colnames(randy_v2_fit) <- c('x', 'var2')
     spl_dist <- merge(randy_v1_fit, randy_v2_fit, by = 'x')
-    if (retain_perm==TRUE) {
-      transfer_perms <- spl_dist[, 2:3]
-      colnames(transfer_perms) <- c(paste0('v1perm_',ix), paste0('v2perm_',ix))
+    spl_dist$abs_distance <- abs(spl_dist$var1 - spl_dist$var2)
+    if (retain_perm == TRUE) {
+      transfer_perms <- spl_dist[, 2:4]
+      colnames(transfer_perms) <- c(paste0('v1perm_',ix),
+                                    paste0('v2perm_',ix),
+                                    paste0('pdistance_',ix))
       if (ix > 1) perm_retainer <- perm_output$perm_retainer
       perm_retainer <- cbind(perm_retainer, transfer_perms)
       perm_output$perm_retainer <- perm_retainer
       # print(summary(xx))
-      spl_dist$abs_distance <- abs(spl_dist$var1 - spl_dist$var2)
+      
       perm_area <- sum(spl_dist$abs_distance) / ints
       if (ix > 1) permuted <- perm_output$permuted
       permuted <- append(permuted, perm_area)
       perm_output$permuted <- permuted
       return(perm_output)
-    } else {
+    } else if (retain_perm == FALSE) {
       # print(summary(xx))
-      spl_dist$abs_distance <- abs(spl_dist$var1 - spl_dist$var2)
+      # spl_dist$abs_distance <- abs(spl_dist$var1 - spl_dist$var2)
       perm_area <- sum(spl_dist$abs_distance) / ints
       permuted <- append(permuted, perm_area)
       return(permuted)
@@ -155,29 +147,78 @@ permuspliner <- function(data, xvar = NULL, yvar = NULL, category = NULL,
   # Run the permutation over desired number of iterations
   in_rand <- rbind(df_v1, df_v2)
   permuted <- list()
-  if (retain_perm==TRUE) {
+  if (retain_perm == TRUE) {
     perm_output <- list()
     perm_retainer <- data.frame(row.names = xx)
-    
     for (ix in 1:perms) {
       perm_output <- .spline_permute(randy = in_rand)
     }
-    pval <- (sum(perm_output$permuted >= as.numeric(real_area)) + 1) / (perms + 1)
+    if (test_direction == 'more') {
+      pval <- (sum(perm_output$permuted >= as.numeric(real_area)) + 1) / (perms + 1)
+    } else if (test_direction == 'less') {
+      pval <- (sum(perm_output$permuted <= as.numeric(real_area)) + 1) / (perms + 1)
+    }
     # perm_output <- replicate(perms, 
     #                       .spline_permute(randy = in_rand))
-  } else {
+  } else if (retain_perm == FALSE) {
     permuted <- replicate(perms, 
                        .spline_permute(randy = in_rand))
-    pval <- (sum(permuted >= as.numeric(real_area)) + 1) / (perms + 1)
+    if (test_direction == 'more') {
+      pval <- (sum(permuted >= as.numeric(real_area)) + 1) / (perms + 1)
+    } else if (test_direction == 'less') {
+      pval <- (sum(permuted <= as.numeric(real_area)) + 1) / (perms + 1)
+    }
   }
-  
   
   # Return the p-value
   if (quiet == FALSE) {
     cat(paste('\np-value =', round(pval, digits = 5), '\n\n'))
   }
-  result <- list("pval" = pval,
-                 "v1_interpolated" = v1_spl_f, "v2_interpolated" = v2_spl_f,
-                 "v1_spline" = df_v1_spl, "v2_spline" = df_v2_spl)
+  if (retain_perm == TRUE) {
+    result <- list("pval" = pval,
+                   "v1_interpolated" = v1_spl_f, "v2_interpolated" = v2_spl_f,
+                   "v1_spline" = df_v1_spl, "v2_spline" = df_v2_spl,
+                   "permuted_splines" = perm_output$perm_retainer,
+                   "true_distance" = real_spl_dist)
+  } else {
+    result <- list("pval" = pval,
+                   "v1_interpolated" = v1_spl_f, "v2_interpolated" = v2_spl_f,
+                   "v1_spline" = df_v1_spl, "v2_spline" = df_v2_spl)
+  }
   return(result)
 }
+
+#' @title Plot permuted distance distribution
+#' @description Compare the permuted distances to the true distance. Requires permuspliner run with the "retain_perm" option.
+#' @rdname permuspliner.plot.permdistance
+#' @param data The results object from the permuspliner function
+#' @param xlabel Name for the x axis in the plot
+#' @export
+#' @examples 
+#'
+
+  # Plot the distributions
+permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
+  require(ggplot2)
+  require(reshape2)
+  if (is.null(xlabel)) xlabel <- 'longitudinal parameter'
+  dists <- data['permuted_splines'][[1]]
+  dists <- dists[, grep('pdistance', colnames(dists))]
+  dists$x.par <- rownames(dists); rownames(dists) <- NULL
+  true_dist <- data['true_distance'][[1]]
+  true_dist <- true_dist[, c(1,4)]
+  dists <- melt(dists, id.vars = 'x.par', variable.name = 'permutation', value.name = 'permuted_distance')
+  p <- ggplot() +
+    geom_line(data=dists, aes(x=as.numeric(x.par), y=as.numeric(permuted_distance), group=factor(permutation)), 
+              color='grey75', alpha=0.5) +
+    geom_line(data=true_dist, aes(x=as.numeric(x), y=as.numeric(abs.distance)), color='red', size=1.5) +
+    theme_classic() + theme(axis.text = element_text(color='black')) +
+    xlab(xlabel) + ylab('group spline distance')
+  p
+}
+
+
+
+
+
+
