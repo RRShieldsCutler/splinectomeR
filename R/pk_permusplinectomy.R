@@ -30,7 +30,7 @@
 
 
 permuspliner <- function(data, xvar = NULL, yvar = NULL, category = NULL,
-                         cases = NULL, groups = NULL, perms = 999, retain_perm = FALSE,
+                         cases = NULL, groups = NA, perms = 999, retain_perm = FALSE,
                          test_direction = 'more', set_spar = NULL, cut_low = NA,
                          ints = 1000, quiet = FALSE, set_tol = 1e-4, cut_sparse = 4) {
 
@@ -49,13 +49,13 @@ permuspliner <- function(data, xvar = NULL, yvar = NULL, category = NULL,
   groups = as.character(groups)
   
   in_df <- data
-  if (is.null(groups)) {
+  if (is.na(groups)) {
     if (length(unique(in_df[, category])) > 2) {
       stop('More than two groups in category column. Define groups with (groups = "Name1,Name2")')
     }
     v1 <- unique(in_df[, category])[1]
     v2 <- unique(in_df[, category])[2]
-  } else if (!is.null(groups)) {
+  } else if (!is.na(groups)) {
     v1 <- strsplit(groups, ',')[[1]][1]
     v2 <- strsplit(groups, ',')[[1]][2]
   }
