@@ -15,7 +15,6 @@ sliding_spliner.plot.pvals(data, xvar = "xvar")
 Plot the imputed p-values over the x variable range
 }
 \examples{
-sliding_spliner.plot.pvals(result$pval_table,
- xvar = 'Time')
+sliding_spliner.plot.pvals(result, xvar = 'Time')
 
 }

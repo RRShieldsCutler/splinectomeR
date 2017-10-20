@@ -164,15 +164,16 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
 #' @param yvar The dependent variable; is continuous, e.g. temperature.
 #' @param category The data category being compared
 #' @export
-#' @examples sliding_spliner.plot.splines(result$spline_longform,
+#' @examples sliding_spliner.plot.splines(result,
 #'  category = 'Diet', xvar = 'Time', yvar = 'weight')
 #'
 
   # Plot the splines
-sliding_spliner.plot.splines <- function(plot.spline.data, category = 'category',
+sliding_spliner.plot.splines <- function(data, category = 'category',
                                          xvar = 'xvar', yvar = 'yvar') {
   require(ggplot2)
-  ggplot(plot.spline.data, aes(x = x, y = value, group = UNIT,
+  plot_data <- data['spline_longform'][[1]]
+  ggplot(plot_data, aes(x = x, y = value, group = UNIT,
     color = as.character(category))) + geom_line(na.rm = T) +
     scale_color_manual(name = category, values = c("#0072B2","#D55E00")) +
     xlab(xvar) + ylab(yvar) +
@@ -188,17 +189,16 @@ sliding_spliner.plot.splines <- function(plot.spline.data, category = 'category'
 #' @param data The dataframe of p-values over the x variable
 #' @param xvar The independent variable; is continuous, e.g. time.
 #' @export
-#' @examples sliding_spliner.plot.pvals(result$pval_table,
-#'  xvar = 'Time')
+#' @examples sliding_spliner.plot.pvals(result, xvar = 'Time')
 #'
 
 
 # Plot the p-values as function of the independent variable (e.g. time)
 # Scale the size of the line and points according to the number of observations
 sliding_spliner.plot.pvals <- function(data, xvar = 'xvar') {
-  library(ggplot2)
+  require(ggplot2)
   .norm_range <- function(x) {(x-min(x)) / (max(x)-min(x))}
-  pval.p <- data
+  pval.p <- data['pval_table'][[1]]
   xvar <- names(pval.p)[1]
   pval.p$N.norm <- .norm_range(x = pval.p[,3])
   ggplot(pval.p, aes(x=pval.p[,1], y=p_value)) + geom_line() +
