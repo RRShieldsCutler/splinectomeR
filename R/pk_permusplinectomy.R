@@ -35,7 +35,7 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
                          ints = 1000, quiet = FALSE, set_tol = 1e-4, cut_sparse = 4) {
 
   # reqs = c(data, category, xvar, yvar, cases)
-  if (is.null(data) | is.null(category) | is.null(xvar) | is.null(yvar) | is.null(cases)) {
+  if (missing(data) | missing(category) | missing(xvar) | missing(yvar) | missing(cases)) {
     stop('Missing required parameter(s). Run ?permuspliner to see help docs')
   }
   
@@ -53,11 +53,11 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
     if (length(unique(in_df[, category])) > 2) {
       stop('More than two groups in category column. Define groups with (groups = "Name1,Name2")')
     }
-    v1 <- unique(in_df[, category])[1]
-    v2 <- unique(in_df[, category])[2]
+    v1 <- as.character(unique(in_df[, category])[1])
+    v2 <- as.character(unique(in_df[, category])[2])
   } else {
-    v1 <- strsplit(groups, ',')[[1]][1]
-    v2 <- strsplit(groups, ',')[[1]][2]
+    v1 <- as.character(strsplit(groups, ',')[[1]][1])
+    v2 <- as.character(strsplit(groups, ',')[[1]][2])
   }
   
   if (!is.na(cut_low)) {
@@ -74,6 +74,8 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
   # The experimentally reported response
   df_v1 <- in_df[in_df[, category] %in% c(v1) & !is.na(in_df[, xvar]), ]
   df_v2 <- in_df[in_df[, category] %in% c(v2) & !is.na(in_df[, xvar]), ]
+  print(length(df_v1[, xvar]))
+  print(length(df_v2[, xvar]))
   if (length(df_v1[, xvar]) < cut_sparse | length(df_v2[, xvar]) < cut_sparse) {
     stop('Not enough data in each group to fit spline')
   }
