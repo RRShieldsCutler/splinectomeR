@@ -74,8 +74,6 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
   # The experimentally reported response
   df_v1 <- in_df[in_df[, category] %in% c(v1) & !is.na(in_df[, xvar]), ]
   df_v2 <- in_df[in_df[, category] %in% c(v2) & !is.na(in_df[, xvar]), ]
-  print(length(df_v1[, xvar]))
-  print(length(df_v2[, xvar]))
   if (length(df_v1[, xvar]) < cut_sparse | length(df_v2[, xvar]) < cut_sparse) {
     stop('Not enough data in each group to fit spline')
   }
