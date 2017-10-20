@@ -29,7 +29,7 @@
 #' result$pval
 
 
-permuspliner <- function(data, xvar = NULL, yvar = NULL, category = NULL,
+permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
                          cases = NULL, groups = NA, perms = 999, retain_perm = FALSE,
                          test_direction = 'more', set_spar = NULL, cut_low = NA,
                          ints = 1000, quiet = FALSE, set_tol = 1e-4, cut_sparse = 4) {
