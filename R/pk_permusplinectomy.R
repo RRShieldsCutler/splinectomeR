@@ -252,13 +252,12 @@ permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
 #' ggsave(permsplot, file = 'my_plot.png', dpi=300, height=4, width=4)
 #' 
 
-permuspliner.plot.permsplines <- function(data, xvar=NULL, yvar=NULL) {
+permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   if (is.null(data) | is.null(xvar) | is.null(yvar)) {
     stop('Missing required arugments.')
   }
   require(ggplot2)
   require(reshape2)
-  if (is.null(xlabel)) xlabel <- 'longitudinal parameter'
   permsplines <- data['permuted_splines'][[1]]
   permsplines <- permsplines[, grep('perm', colnames(permsplines))]
   permsplines$x.par <- rownames(permsplines); rownames(permsplines) <- NULL
