@@ -272,17 +272,18 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   spar_v1 <- data['v1_spline'][[1]]$spar
   true_v2 <- data['v2_data'][[1]]
   spar_v2 <- data['v2_spline'][[1]]$spar
+  num_points <- length(data$v1_interpolated$x)
   p <- ggplot() +
     geom_line(data=permsplines, aes(x=as.numeric(x.par), y=as.numeric(y.par),
                                       group=factor(permutation)), color='black', alpha=0.1, size=1.2) +
     # geom_line(data=permsplines_2, aes(x=as.numeric(x.par), y=as.numeric(y.par),
     #                                   group=factor(permutation)), color='light blue', alpha=0.4, size=0.5) +
     geom_smooth(aes(x=as.numeric(true_v1[, xvar]), y=as.numeric(true_v1[, yvar])),
-                color='red',
-                size=1.5, span = spar_v1, method='loess', show.legend = F, se=F) +
+                color='red', size=1.5, span = spar_v1, method='loess',
+                show.legend = F, se=F, n = num_points) +
     geom_smooth(aes(x=as.numeric(true_v2[, xvar]), y=as.numeric(true_v2[, yvar])),
-                color='blue', 
-                size=1.5, span = spar_v2, method='loess', show.legend = F, se=F) +
+                color='blue',  size=1.5, span = spar_v2, method='loess',
+                show.legend = F, se=F, n = num_points) +
         theme_classic() + theme(axis.text = element_text(color='black')) +
     xlab(xvar) + ylab(yvar)
   p
