@@ -227,9 +227,9 @@ permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
   dists <- melt(dists, id.vars = 'x.par', variable.name = 'permutation',
                 value.name = 'permuted_distance')
   if (num_perms > 1000) {
-    alpha_level <- 0.001
+    alpha_level <- 0.002
   } else if (num_perms >= 100) {
-    alpha_level <- 0.01
+    alpha_level <- 0.02
   } else if (num_perms < 100) {
     alpha_level <- 0.1
   }
@@ -289,9 +289,9 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   # spar_v2 <- data['v2_spline'][[1]]$spar
   num_points <- length(true_v1$x)
   if (num_perms > 1000) {
-    alpha_level <- 0.001
+    alpha_level <- 0.002
   } else if (num_perms >= 100) {
-    alpha_level <- 0.01
+    alpha_level <- 0.02
   } else if (num_perms < 100) {
     alpha_level <- 0.1
   }
@@ -303,10 +303,10 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
     # geom_line(data=permsplines_2, aes(x=as.numeric(x.par), y=as.numeric(y.par),
     #                                   group=factor(permutation)), color='light blue', alpha=0.4, size=0.5) +
     geom_line(aes(x=as.numeric(true_v1$x), y=as.numeric(true_v1$var1),
-                  color='red'), size=1.5) +
+                  color='red'), size=0.5) +
     geom_line(aes(x=as.numeric(true_v2$x), y=as.numeric(true_v2$var2),
                   color='blue'),  size=1.5) +
-    scale_color_discrete(name='', labels=c('permuted', var_1, var_2)) +
+    scale_color_discrete(name='', values=c('black','red','blue'), labels=c('permuted', var_1, var_2)) +
         theme_classic() + theme(axis.text = element_text(color='black')) +
     xlab(xvar) + ylab(yvar)
   return(p)
