@@ -298,13 +298,14 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   
   p <- ggplot() +
     geom_line(data=permsplines, aes(x=as.numeric(x.par), y=as.numeric(y.par),
-                                      group=factor(permutation)), color='black', alpha=alpha_level, size=1) +
+                                      group=factor(permutation), color='black'),
+              alpha=alpha_level, size=1) +
     # geom_line(data=permsplines_2, aes(x=as.numeric(x.par), y=as.numeric(y.par),
     #                                   group=factor(permutation)), color='light blue', alpha=0.4, size=0.5) +
-    geom_line(aes(x=as.numeric(true_v1[, xvar]), y=as.numeric(true_v1[, yvar])),
-                color='red', size=1.5) +
-    geom_line(aes(x=as.numeric(true_v2[, xvar]), y=as.numeric(true_v2[, yvar])),
-                color='blue',  size=1.5) +
+    geom_line(aes(x=as.numeric(true_v1[, xvar]), y=as.numeric(true_v1[, yvar]),
+                  color='red'), size=1.5) +
+    geom_line(aes(x=as.numeric(true_v2[, xvar]), y=as.numeric(true_v2[, yvar]),
+                  color='blue'),  size=1.5) +
     scale_color_discrete(name='', labels=c('permuted', var1, var2)) +
         theme_classic() + theme(axis.text = element_text(color='black')) +
     xlab(xvar) + ylab(yvar)
