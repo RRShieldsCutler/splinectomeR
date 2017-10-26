@@ -226,7 +226,14 @@ permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
   true_dist <- true_dist[, c(1,4)]
   dists <- melt(dists, id.vars = 'x.par', variable.name = 'permutation',
                 value.name = 'permuted_distance')
-  alpha_level <- 0.5 / num_perms
+  if (num_perms > 1000) {
+    alpha_level <- 0.001
+  } else if (num_perms >= 100) {
+    alpha_level <- 0.01
+  } else if (num_perms < 100) {
+    alpha_level <- 0.1
+  }
+  
   p <- ggplot() +
     geom_line(data=dists, aes(x=as.numeric(x.par), y=as.numeric(permuted_distance),
                               group=factor(permutation)), 
@@ -276,23 +283,28 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   # permsplines_2 <- permsplines[permsplines$group=='Group_2', ]
   var1 <- as.character(data['category_1'][[1]])
   var2 <- as.character(data['category_2'][[1]])
-  true_v1 <- data['v1_data'][[1]]
-  spar_v1 <- data['v1_spline'][[1]]$spar
-  true_v2 <- data['v2_data'][[1]]
-  spar_v2 <- data['v2_spline'][[1]]$spar
-  num_points <- length(data$v1_interpolated$x)
-  alpha_level <- 0.5 / num_perms
+  true_v1 <- data['v1_interpolated'][[1]]
+  # spar_v1 <- data['v1_spline'][[1]]$spar
+  true_v2 <- data['v2_interpolated'][[1]]
+  # spar_v2 <- data['v2_spline'][[1]]$spar
+  num_points <- length(true_v1$x)
+  if (num_perms > 1000) {
+    alpha_level <- 0.001
+  } else if (num_perms >= 100) {
+    alpha_level <- 0.01
+  } else if (num_perms < 100) {
+    alpha_level <- 0.1
+  }
+  
   p <- ggplot() +
     geom_line(data=permsplines, aes(x=as.numeric(x.par), y=as.numeric(y.par),
-                                      group=factor(permutation)), color='black', alpha=alpha_level, size=1.2) +
+                                      group=factor(permutation)), color='black', alpha=alpha_level, size=1) +
     # geom_line(data=permsplines_2, aes(x=as.numeric(x.par), y=as.numeric(y.par),
     #                                   group=factor(permutation)), color='light blue', alpha=0.4, size=0.5) +
-    geom_smooth(aes(x=as.numeric(true_v1[, xvar]), y=as.numeric(true_v1[, yvar])),
-                color='red', size=1.5, span = spar_v1, method='loess',
-                show.legend = F, se=F, n = num_points) +
-    geom_smooth(aes(x=as.numeric(true_v2[, xvar]), y=as.numeric(true_v2[, yvar])),
-                color='blue',  size=1.5, span = spar_v2, method='loess',
-                show.legend = F, se=F, n = num_points) +
+    geom_line(aes(x=as.numeric(true_v1[, xvar]), y=as.numeric(true_v1[, yvar])),
+                color='red', size=1.5) +
+    geom_line(aes(x=as.numeric(true_v2[, xvar]), y=as.numeric(true_v2[, yvar])),
+                color='blue',  size=1.5) +
     scale_color_discrete(name='', labels=c('permuted', var1, var2)) +
         theme_classic() + theme(axis.text = element_text(color='black')) +
     xlab(xvar) + ylab(yvar)
