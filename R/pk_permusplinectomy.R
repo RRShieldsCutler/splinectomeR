@@ -220,15 +220,17 @@ permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
   if (is.null(xlabel)) xlabel <- 'longitudinal parameter'
   dists <- data['permuted_splines'][[1]]
   dists <- dists[, grep('pdistance', colnames(dists))]
+  num_perms <- ncol(dists)
   dists$x.par <- rownames(dists); rownames(dists) <- NULL
   true_dist <- data['true_distance'][[1]]
   true_dist <- true_dist[, c(1,4)]
   dists <- melt(dists, id.vars = 'x.par', variable.name = 'permutation',
                 value.name = 'permuted_distance')
+  alpha_level <- 0.5 / num_perms
   p <- ggplot() +
     geom_line(data=dists, aes(x=as.numeric(x.par), y=as.numeric(permuted_distance),
                               group=factor(permutation)), 
-              color='black', alpha=0.2, size=1) +
+              color='black', alpha=alpha_level, size=1) +
     geom_line(data=true_dist, aes(x=as.numeric(x), y=as.numeric(abs.distance)),
               color='red', size=1.5) +
     theme_classic() + theme(axis.text = element_text(color='black')) +
@@ -273,7 +275,7 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   # permsplines_1 <- permsplines[permsplines$group=='Group_1', ]
   # permsplines_2 <- permsplines[permsplines$group=='Group_2', ]
   var1 <- as.character(data['category_1'][[1]])
-  var2 <- as.character(data['category_2'][[2]])
+  var2 <- as.character(data['category_2'][[1]])
   true_v1 <- data['v1_data'][[1]]
   spar_v1 <- data['v1_spline'][[1]]$spar
   true_v2 <- data['v2_data'][[1]]
@@ -282,7 +284,7 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   alpha_level <- 0.5 / num_perms
   p <- ggplot() +
     geom_line(data=permsplines, aes(x=as.numeric(x.par), y=as.numeric(y.par),
-                                      group=factor(permutation)), color='black', alpha=0.1, size=1.2) +
+                                      group=factor(permutation)), color='black', alpha=alpha_level, size=1.2) +
     # geom_line(data=permsplines_2, aes(x=as.numeric(x.par), y=as.numeric(y.par),
     #                                   group=factor(permutation)), color='light blue', alpha=0.4, size=0.5) +
     geom_smooth(aes(x=as.numeric(true_v1[, xvar]), y=as.numeric(true_v1[, yvar])),
