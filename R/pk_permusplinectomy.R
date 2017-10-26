@@ -85,6 +85,8 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
                                  spar = set_spar, tol = set_tol))
   x0 <- max(c(min(df_v1_spl$x)), min(df_v2_spl$x))
   x1 <- min(c(max(df_v1_spl$x)), max(df_v2_spl$x))
+  x0 <- x0 + ((x1 - x0) * 0.1)  # Trim the first and last 10% because of spline behavior
+  x1 <- x1 - ((x1 - x0) * 0.1)
   xby <- (x1 - x0) / (ints - 1)
   xx <- seq(x0, x1, by = xby)
   v1_spl_f <- data.frame(predict(df_v1_spl, xx))
@@ -180,7 +182,7 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
   
   # Return the results list
   if (retain_perm == TRUE) {
-    result <- list("pval" = pval,
+    result <- list("pval" = pval, "category_1" = v1, "category_2" = v2,
                    "v1_interpolated" = v1_spl_f, "v2_interpolated" = v2_spl_f,
                    "v1_spline" = df_v1_spl, "v2_spline" = df_v2_spl,
                    "permuted_splines" = perm_output$perm_retainer,
@@ -231,7 +233,7 @@ permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
               color='red', size=1.5) +
     theme_classic() + theme(axis.text = element_text(color='black')) +
     xlab(xlabel) + ylab('group spline distance')
-  p
+  return(p)
 }
 
 
@@ -252,6 +254,7 @@ permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
 #' ggsave(permsplot, file = 'my_plot.png', dpi=300, height=4, width=4)
 #' 
 
+# TODO: Make the lines labeled by v1/v2!
 permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   if (is.null(data) | is.null(xvar) | is.null(yvar)) {
     stop('Missing required arugments.')
@@ -260,6 +263,7 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   require(reshape2)
   permsplines <- data['permuted_splines'][[1]]
   permsplines <- permsplines[, grep('perm', colnames(permsplines))]
+  num_perms <- ncol(permsplines)
   permsplines$x.par <- rownames(permsplines); rownames(permsplines) <- NULL
   permsplines <- melt(permsplines, id.vars = 'x.par', variable.name = 'permutation',
                       value.name = 'y.par')
@@ -268,11 +272,14 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   # permsplines$group[grep('v2', permsplines$permutation)] <- 'Group_2'
   # permsplines_1 <- permsplines[permsplines$group=='Group_1', ]
   # permsplines_2 <- permsplines[permsplines$group=='Group_2', ]
+  var1 <- as.character(data['category_1'][[1]])
+  var2 <- as.character(data['category_2'][[2]])
   true_v1 <- data['v1_data'][[1]]
   spar_v1 <- data['v1_spline'][[1]]$spar
   true_v2 <- data['v2_data'][[1]]
   spar_v2 <- data['v2_spline'][[1]]$spar
   num_points <- length(data$v1_interpolated$x)
+  alpha_level <- 0.5 / num_perms
   p <- ggplot() +
     geom_line(data=permsplines, aes(x=as.numeric(x.par), y=as.numeric(y.par),
                                       group=factor(permutation)), color='black', alpha=0.1, size=1.2) +
@@ -284,9 +291,10 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
     geom_smooth(aes(x=as.numeric(true_v2[, xvar]), y=as.numeric(true_v2[, yvar])),
                 color='blue',  size=1.5, span = spar_v2, method='loess',
                 show.legend = F, se=F, n = num_points) +
+    scale_color_discrete(name='', labels=c('permuted', var1, var2)) +
         theme_classic() + theme(axis.text = element_text(color='black')) +
     xlab(xvar) + ylab(yvar)
-  p
+  return(p)
 }
 
 
