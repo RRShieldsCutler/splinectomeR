@@ -276,17 +276,16 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   permsplines$x.par <- rownames(permsplines); rownames(permsplines) <- NULL
   permsplines <- melt(permsplines, id.vars = 'x.par', variable.name = 'permutation',
                       value.name = 'y.par')
-  # permsplines$group <- NA
-  # permsplines$group[grep('v1', permsplines$permutation)] <- 'Group_1'
-  # permsplines$group[grep('v2', permsplines$permutation)] <- 'Group_2'
-  # permsplines_1 <- permsplines[permsplines$group=='Group_1', ]
-  # permsplines_2 <- permsplines[permsplines$group=='Group_2', ]
   var_1 <- as.character(data['category_1'][[1]])
   var_2 <- as.character(data['category_2'][[1]])
   true_v1 <- data['v1_interpolated'][[1]]
-  # spar_v1 <- data['v1_spline'][[1]]$spar
-  true_v2 <- data['v2_interpolated'][[1]]
-  # spar_v2 <- data['v2_spline'][[1]]$spar
+  true_v1$var <- var_1
+  colnames(true_v1)[2] <- 'y'
+  true_v2 <- pdata['v2_interpolated'][[1]]
+  true_v2$var <- var_2
+  colnames(true_v2)[2] <- 'y'
+  true_data <- rbind(true_v1, true_v2)
+  true_data$var <- factor(true_data$var)
   num_points <- length(true_v1$x)
   if (num_perms > 1000) {
     alpha_level <- 0.002
@@ -298,15 +297,11 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   
   p <- ggplot() +
     geom_line(data=permsplines, aes(x=as.numeric(x.par), y=as.numeric(y.par),
-                                      group=factor(permutation), color='black'),
-              alpha=alpha_level, size=1) +
-    # geom_line(data=permsplines_2, aes(x=as.numeric(x.par), y=as.numeric(y.par),
-    #                                   group=factor(permutation)), color='light blue', alpha=0.4, size=0.5) +
-    geom_line(aes(x=as.numeric(true_v1$x), y=as.numeric(true_v1$var1),
-                  color='red'), size=0.5) +
-    geom_line(aes(x=as.numeric(true_v2$x), y=as.numeric(true_v2$var2),
-                  color='blue'),  size=1.5) +
-    scale_color_discrete(name='', values=c('black','red','blue'), labels=c('permuted', var_1, var_2)) +
+                                      group=factor(permutation)),
+              alpha=alpha_level, size=0.9) +
+    geom_line(data=true_data, aes(x=as.numeric(x), y=as.numeric(y), color=factor(var)),
+              size=1.2) +
+    scale_color_manual(name='', values=c('red','blue'), labels=c(var_1, var_2)) +
         theme_classic() + theme(axis.text = element_text(color='black')) +
     xlab(xvar) + ylab(yvar)
   return(p)
