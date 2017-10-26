@@ -281,7 +281,7 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   true_v1 <- data['v1_interpolated'][[1]]
   true_v1$var <- var_1
   colnames(true_v1)[2] <- 'y'
-  true_v2 <- pdata['v2_interpolated'][[1]]
+  true_v2 <- data['v2_interpolated'][[1]]
   true_v2$var <- var_2
   colnames(true_v2)[2] <- 'y'
   true_data <- rbind(true_v1, true_v2)
@@ -290,7 +290,7 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   if (num_perms > 1000) {
     alpha_level <- 0.002
   } else if (num_perms >= 100) {
-    alpha_level <- 0.02
+    alpha_level <- 0.01
   } else if (num_perms < 100) {
     alpha_level <- 0.1
   }
