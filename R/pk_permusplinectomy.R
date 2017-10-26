@@ -281,8 +281,8 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   # permsplines$group[grep('v2', permsplines$permutation)] <- 'Group_2'
   # permsplines_1 <- permsplines[permsplines$group=='Group_1', ]
   # permsplines_2 <- permsplines[permsplines$group=='Group_2', ]
-  var1 <- as.character(data['category_1'][[1]])
-  var2 <- as.character(data['category_2'][[1]])
+  var_1 <- as.character(data['category_1'][[1]])
+  var_2 <- as.character(data['category_2'][[1]])
   true_v1 <- data['v1_interpolated'][[1]]
   # spar_v1 <- data['v1_spline'][[1]]$spar
   true_v2 <- data['v2_interpolated'][[1]]
@@ -302,11 +302,11 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
               alpha=alpha_level, size=1) +
     # geom_line(data=permsplines_2, aes(x=as.numeric(x.par), y=as.numeric(y.par),
     #                                   group=factor(permutation)), color='light blue', alpha=0.4, size=0.5) +
-    geom_line(aes(x=as.numeric(true_v1[, xvar]), y=as.numeric(true_v1[, yvar]),
+    geom_line(aes(x=as.numeric(true_v1$x), y=as.numeric(true_v1$var1),
                   color='red'), size=1.5) +
-    geom_line(aes(x=as.numeric(true_v2[, xvar]), y=as.numeric(true_v2[, yvar]),
+    geom_line(aes(x=as.numeric(true_v2$x), y=as.numeric(true_v2$var2),
                   color='blue'),  size=1.5) +
-    scale_color_discrete(name='', labels=c('permuted', var1, var2)) +
+    scale_color_discrete(name='', labels=c('permuted', var_1, var_2)) +
         theme_classic() + theme(axis.text = element_text(color='black')) +
     xlab(xvar) + ylab(yvar)
   return(p)
