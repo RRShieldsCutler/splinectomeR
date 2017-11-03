@@ -132,13 +132,14 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
                                               spar = set_spar))
     randy.fit <- data.frame(predict(randy.spl, xx))
     colnames(randy.fit) <- c('x', 'var1')
-    transfer.perms <- c(paste0('perm_', ix))
-    transfer.perms <- randy.fit[, 2]
-    # colnames(transfer.perms) <- c(paste0('perm_', ix))
-    if (ix > 1) perm_retainer <- perm_output$perm_retainer
-    perm_retainer <- cbind(perm_retainer, transfer.perms)
+    transfer.perms <- randy.fit
+    colnames(transfer.perms)[2] <- c(paste0('perm_', ix))
+    if (ix > 1) {
+      perm_retainer <- perm_output$perm_retainer
+      perm_retainer <- merge(perm_retainer, transfer.perms, by = 'x')
+    } else perm_retainer <- transfer.perms
     perm_output$perm_retainer <- perm_retainer
-    colnames(perm_output)[ncol(perm_output)] <- paste0('perm_', ix)
+    # if (ix > 1) colnames(perm_output)[ncol(perm_output)] <- paste0('perm_', ix)
     p_base = randy.fit$var1[1]
     randy.fit$p_base <- p_base
     randy.fit$distance <- (randy.fit$var1 - randy.fit$p_base)
@@ -151,13 +152,13 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   # Run the permutation over desired number of iterations
   permuted <- list()
   perm_output <- list()
-  perm_retainer <- data.frame(row.names = xx)
+  perm_retainer <- data.frame()
   for (ix in 1:perms) {
     perm_output <- .spline_permute(randy = df)
   }
   # permuted <- replicate(perms, 
   #                      .spline_permute(randy = df, permuted = permuted))
-  pval <- (sum(lapply(permuted, abs) >= abs(real.area)) + 1) / (perms + 1)
+  pval <- (sum(lapply(perm_output$permuted, abs) >= abs(real.area)) + 1) / (perms + 1)
   
   # Return the p-value
   if (quiet == FALSE) {
