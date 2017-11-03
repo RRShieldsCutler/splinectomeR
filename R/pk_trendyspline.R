@@ -221,7 +221,7 @@ trendyspliner.plot.perms <- function(data = NULL, xlabel=NULL, ylabel=NULL) {
     geom_line(data=true_df, aes(x=as.numeric(x), y=as.numeric(y)),
               size=1.2, color = 'red') +
     theme_classic() + theme(axis.text = element_text(color='black')) +
-    xlab(xvar) + ylab(yvar)
+    xlab(xlabel) + ylab(ylabel)
   return(p)
 }
 
