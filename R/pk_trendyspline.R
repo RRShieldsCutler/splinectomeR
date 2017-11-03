@@ -164,7 +164,7 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   if (quiet == FALSE) {
     cat(paste('\np-value =', round(pval, digits = 5), '\n\n'))
   }
-  result <- list("pval" = pval, "imputed_curve" = spl.fit, "group_spline" = df.spl,
+  result <- list("pval" = pval, "imputed_curve" = spl.fit[, c(1,2,4)], "group_spline" = df.spl,
                  "permuted_splines" = perm_output$perm_retainer)
   return(result)
 }
@@ -203,14 +203,14 @@ trendyspliner.plot.perms <- function(data = NULL, xlabel=NULL, ylabel=NULL) {
   num_perms <- ncol(permsplines)
   permsplines <- melt(permsplines, id.vars = 'x', variable.name = 'permutation',
                       value.name = 'y.par')
-  true_df <- data['imputed_curve'][[1]]
+  true_df <- data['imputed_curve'][[1]][, 1:2]
   colnames(true_df) <- c('x','y')
   num_points <- length(true_df$x)
   if (num_perms > 1000) {
     alpha_level <- 0.002
-  } else if (num_perms >= 100) {
+  } else if (num_perms > 100) {
     alpha_level <- 0.01
-  } else if (num_perms < 100) {
+  } else if (num_perms <= 100) {
     alpha_level <- 0.35
   }
   
