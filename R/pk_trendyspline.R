@@ -193,15 +193,15 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
 
 trendyspliner.plot.perms <- function(data = NULL, xlabel=NULL, ylabel=NULL) {
   require(ggplot2)
+  require(reshape2)
+  
   if (is.null(data)) stop('Missing required arugments.')
   if (is.null(xlabel)) xlabel <- 'longitudinal axis'
   if (is.null(ylabel)) ylabel <- 'response axis'
   
   permsplines <- data['permuted_splines'][[1]]
-  # permsplines <- permsplines[, grep('perm', colnames(permsplines))]
   num_perms <- ncol(permsplines)
-  permsplines$x.par <- rownames(permsplines); rownames(permsplines) <- NULL
-  permsplines <- melt(permsplines, id.vars = 'x.par', variable.name = 'permutation',
+  permsplines <- melt(permsplines, id.vars = 'x', variable.name = 'permutation',
                       value.name = 'y.par')
   true_df <- data['imputed_curve'][[1]]
   colnames(true_df) <- c('x','y')
@@ -211,11 +211,11 @@ trendyspliner.plot.perms <- function(data = NULL, xlabel=NULL, ylabel=NULL) {
   } else if (num_perms >= 100) {
     alpha_level <- 0.01
   } else if (num_perms < 100) {
-    alpha_level <- 0.2
+    alpha_level <- 0.35
   }
   
   p <- ggplot() +
-    geom_line(data=permsplines, aes(x=as.numeric(x.par), y=as.numeric(y.par),
+    geom_line(data=permsplines, aes(x=as.numeric(x), y=as.numeric(y.par),
                                     group=factor(permutation)),
               alpha=alpha_level, size=0.9) +
     geom_line(data=true_df, aes(x=as.numeric(x), y=as.numeric(y)),
