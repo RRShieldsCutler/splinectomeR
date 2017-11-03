@@ -209,9 +209,9 @@ trendyspliner.plot.perms <- function(data = NULL, xlabel=NULL, ylabel=NULL) {
   if (num_perms > 1000) {
     alpha_level <- 0.002
   } else if (num_perms > 100) {
-    alpha_level <- 0.01
+    alpha_level <- 0.02
   } else if (num_perms <= 100) {
-    alpha_level <- 0.35
+    alpha_level <- 0.4
   }
   
   p <- ggplot() +
