@@ -65,7 +65,7 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   } else if (is.null(category)) df <- df
   df <- df[!is.na(df[, xvar]), ]
   
-  if (!is.na(cut_low)) {
+  if (!is.null(cut_low)) {
     cut_low <- as.numeric(cut_low)
     keep.ids <- data.frame(table(df[, cases]))
     keep.ids <- as.character(keep.ids[keep.ids$Freq > cut_low, ]$Var1)
