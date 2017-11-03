@@ -103,8 +103,6 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   }
   
   
-  ## First determine the group mean (null hypothesis for changing over time)
-  # y.mean <- mean(df[, yvar])
   df.spl <- with(df,
                    smooth.spline(x=df[, xvar], y=df[, yvar],
                                  spar = set_spar))
@@ -116,7 +114,7 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   xx <- seq(from = x0, to = x1, by = xby)
   spl.fit <- data.frame(predict(df.spl, xx))
   colnames(spl.fit) <- c('x', 'var1')
-  y_base = spl.fit$var1[1]
+  y_base = spl.fit$var1[1]   # Null hypothesis: trend doesn't vary from zero over x axis
   real.spl.dist <- spl.fit
   spl.fit$y_base <- y_base
   spl.fit$distance <- (spl.fit$var1 - spl.fit$y_base)
@@ -156,8 +154,6 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   for (ix in 1:perms) {
     perm_output <- .spline_permute(randy = df)
   }
-  # permuted <- replicate(perms, 
-  #                      .spline_permute(randy = df, permuted = permuted))
   pval <- (sum(lapply(perm_output$permuted, abs) >= abs(real.area)) + 1) / (perms + 1)
   
   # Return the p-value
