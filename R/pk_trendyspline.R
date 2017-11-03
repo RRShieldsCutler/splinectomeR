@@ -132,12 +132,13 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
                                               spar = set_spar))
     randy.fit <- data.frame(predict(randy.spl, xx))
     colnames(randy.fit) <- c('x', 'var1')
+    transfer.perms <- c(paste0('perm_', ix))
     transfer.perms <- randy.fit[, 2]
-    colnames(transfer.perms) <- c(paste0('perm_', ix))
+    # colnames(transfer.perms) <- c(paste0('perm_', ix))
     if (ix > 1) perm_retainer <- perm_output$perm_retainer
     perm_retainer <- cbind(perm_retainer, transfer.perms)
     perm_output$perm_retainer <- perm_retainer
-    
+    colnames(perm_output)[ncol(perm_output)] <- paste0('perm_', ix)
     p_base = randy.fit$var1[1]
     randy.fit$p_base <- p_base
     randy.fit$distance <- (randy.fit$var1 - randy.fit$p_base)
