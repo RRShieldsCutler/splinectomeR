@@ -179,6 +179,8 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
 #' @param ylabel Optional: Title (as string) to print on the y axis
 #' @export
 #' @examples 
+#' 
+#' # Loads ggplot2 dependency
 #' permsplot <- trendyspliner.plot.perms(results, xlabel='Time', ylabel='Weight')
 #' 
 #' # View the plot
@@ -191,7 +193,6 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
 
 trendyspliner.plot.perms <- function(data = NULL, xlabel=NULL, ylabel=NULL) {
   require(ggplot2)
-  require(reshape2)
   if (is.null(data)) stop('Missing required arugments.')
   if (is.null(xlabel)) xlabel <- 'longitudinal axis'
   if (is.null(ylabel)) ylabel <- 'response axis'
@@ -202,9 +203,9 @@ trendyspliner.plot.perms <- function(data = NULL, xlabel=NULL, ylabel=NULL) {
   permsplines$x.par <- rownames(permsplines); rownames(permsplines) <- NULL
   permsplines <- melt(permsplines, id.vars = 'x.par', variable.name = 'permutation',
                       value.name = 'y.par')
-  true_v1 <- data['imputed_curve'][[1]]
-  colnames(true_v1) <- c('x','y')
-  num_points <- length(true_v1$x)
+  true_df <- data['imputed_curve'][[1]]
+  colnames(true_df) <- c('x','y')
+  num_points <- length(true_df$x)
   if (num_perms > 1000) {
     alpha_level <- 0.002
   } else if (num_perms >= 100) {
@@ -217,7 +218,7 @@ trendyspliner.plot.perms <- function(data = NULL, xlabel=NULL, ylabel=NULL) {
     geom_line(data=permsplines, aes(x=as.numeric(x.par), y=as.numeric(y.par),
                                     group=factor(permutation)),
               alpha=alpha_level, size=0.9) +
-    geom_line(data=true_data, aes(x=as.numeric(x), y=as.numeric(y)),
+    geom_line(data=true_df, aes(x=as.numeric(x), y=as.numeric(y)),
               size=1.2, color = 'red') +
     theme_classic() + theme(axis.text = element_text(color='black')) +
     xlab(xvar) + ylab(yvar)
