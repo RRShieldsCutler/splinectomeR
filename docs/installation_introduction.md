@@ -33,6 +33,19 @@ An example using the `ChickWeight` dataset from the `datasets` package:
 > result$pval
 [1] 0.159
 ```
+##### Permuspliner plotting functions
+There are two plotting functions built into the permuspliner test, `permuspliner.plot.permdistance` and `permuspliner.plot.permsplines`. The former plots the true measured distance between the two groups across the longitudinal axis, as well as all of the distances from the permuted data. These are the curves from which the p-value is derived, so this provides visual confidence of the p-value; if the real distance is greater than expected from random chance, its curve will be at or near the top (or bottom) of most of the permuted distances.  
+  
+The second plotting function, `permuspliner.plot.permsplines` shows the two groups' actual splines along with the individual permuted splines. Here, you can see how well the two groups are distinguished compared to all the random distributions, again, visualizing the strength of the difference. To run these, you use the result object from the main function.
+```R
+# Distance plot has a label argument for aesthetics - it just labels the axis
+permuspliner.plot.permdistance(result, xlabel = 'Time')
+
+# Splines plot requires the names of the longitudinal (x) and response (y) variables
+# as were used in the original test function.
+permuspliner.plot.permsplines(result, xvar = 'Time', yvar = 'weight')
+```  
+
 ***
   
 #### Trendyspliner
@@ -54,6 +67,12 @@ For further details and an example, check out the help docs for each function.
 > ?permuspliner()
 > ?trendyspliner()
 ```
+##### trendyspliner.plot.perms
+You can plot the actual trend spline with all the permuted splines using this function and the results object from the main test function. This allows you to visualize the confidence of your permutation test. It uses `ggplot2` and `reshape2` to plot the results, and you can run it simply as follows:
+```R
+trendyspliner.plot.perms(result, xlabel = 'time', ylabel = 'weight of chick')
+```
+
 ***
   
 #### Sliding_spliner
@@ -78,12 +97,12 @@ The output is a list with three items:
 3. the splines as a long-form dataframe, ready for plotting (see next...)
 
 ##### sliding_spliner.plot.pvals
-This function uses the `result$pval_table` to plot the trend in p-values over the x variable, with the points scaled by the number of observations (so points with greater _n_ in the significance test appear larger). This allows one to quickly visualize the trends.
+This function uses the results object of the main test function to plot the trend in p-values over the x variable, with the points scaled by the number of observations (so points with greater _n_ in the significance test appear larger). This allows one to quickly visualize the trends.
 ```R
-sliding_spliner.plot.pvals(result$pval_table, cases = 'Chick')
+sliding_spliner.plot.pvals(result, cases = 'Chick')
 ```
 ##### sliding_spliner.plot.splines
-To see what the spline smoothed data look like in comparing the two groups, this function uses the `spline_longform` element of the results. You can specify the category, xvar, and yvar to display on the plots (defaults are 'category', 'xvar', and 'yvar').
+Uses the results object to see what the spline smoothed data look like in comparing the two groups. You can specify the category, xvar, and yvar to display on the plots (defaults are 'category', 'xvar', and 'yvar').
 ```R
-sliding_spliner.plot.splines(result$spline_longform, category = 'Diet', xvar = 'Time', yvar = 'weight')
+sliding_spliner.plot.splines(result, category = 'Diet', xvar = 'Time', yvar = 'weight')
 ```

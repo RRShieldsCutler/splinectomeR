@@ -104,8 +104,12 @@ The third major functionality in the `splinectomeR` package is detecting signifi
 As in the `permuspliner()` test above, you must specify a group to analyze if there are multiple groups.  
 
 ```{r}
-result <- trendyspliner(data = ChickWeight, xvar = 'Time', yvar = 'weight', group = '4',
+diet_4_trend <- trendyspliner(data = ChickWeight, xvar = 'Time', yvar = 'weight', group = '4',
                         cases = 'Chick', category = 'Diet', perms = 99, mean_center = F)
+
+# There is also a plotting function for visualizing the permutations in this function
+# Note the x and y label arguments are purely aesthetic
+trendyspliner.plot.perms(diet_4_trend, xlabel = 'time', ylabel = 'weight')
 ```
   
 You could also quickly run through all four diet variables:  

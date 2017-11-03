@@ -565,6 +565,9 @@ alpha_trendresult_all <- trendyspliner(data = alphadiv_meta, xvar = 'timepoint',
                                        yvar = 'shannon', cases = 'baby_id',
                                        perms = 999, mean_center = F)
 
+# And to visualize the trend in the context of the permuted data
+trendyspliner.plot.perms(alpha_trendresult_all, xlabel = 'time', ylabel = 'Shannon diversity')
+
 # Now in antibiotic exposed infants
 alpha_trendresult_abx <- trendyspliner(data = alphadiv_meta, xvar = 'timepoint',
                                        yvar = 'shannon', cases = 'baby_id', perms = 999,
