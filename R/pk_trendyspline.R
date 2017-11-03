@@ -34,13 +34,13 @@
 #'              cases = 'Chick', group = '1')
 #' result$pval
 
-trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
-                         cases = NA, group = NA, mean_center = TRUE, perms = 999, set_spar = NULL,
-                         cut_low = NA, ints = 1000, quiet = FALSE) {
+trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
+                         cases = NULL, group = NULL, mean_center = TRUE, perms = 999, set_spar = NULL,
+                         cut_low = NULL, ints = 1000, quiet = FALSE) {
   
   
   reqs = c(data, xvar, yvar, cases)
-  if (any(is.na(reqs))) {
+  if (any(is.null(reqs))) {
     stop('Missing required parameters. Run ?trendyspliner to see help docs')
   }
   
@@ -51,8 +51,8 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   df <- data
   
   
-  if (!is.na(category)) {
-    if (is.na(group)) {
+  if (!is.null(category)) {
+    if (is.null(group)) {
       group <- as.character(group)
       if (length(unique(df[, category])) > 1) {
         stop('More than one group in category column. Define group.')
@@ -62,7 +62,7 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
       v1 <- group
     }
     df <- df[df[, category] %in% c(v1), ]
-  }
+  } else if (is.null(category)) df <- df
   df <- df[!is.na(df[, xvar]), ]
   
   if (!is.na(cut_low)) {
@@ -110,6 +110,8 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
                                  spar = set_spar))
   x0 <- min(df.spl$x)
   x1 <- max(df.spl$x)
+  x0 <- x0 + ((x1 - x0) * 0.05)  # Trim the first and last 5% to avoid low-density artifacts
+  x1 <- x1 - ((x1 - x0) * 0.05)
   xby <- (x1 - x0) / (ints - 1)
   xx <- seq(from = x0, to = x1, by = xby)
   spl.fit <- data.frame(predict(df.spl, xx))
@@ -122,36 +124,102 @@ trendyspliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   
   # Define the permutation function
   y_shuff <- 'y_shuff'
-  .spline_permute <- function(randy, cases, xvar, yvar, permuted) {
+  .spline_permute <- function(randy) {
     randy.meta <- randy[, c(cases, xvar)]
     randy.meta$y_shuff <- sample(randy[, yvar])
     randy.spl <- with(randy.meta, smooth.spline(x = randy.meta[, xvar],
                                               y = randy.meta$y_shuff,
                                               spar = set_spar))
-    x0 <- min(randy.spl$x)
-    x1 <- max(randy.spl$x)
-    xby <- (x1 - x0) / (ints - 1)
-    xx <- seq(from = x0, to = x1, by = xby)
     randy.fit <- data.frame(predict(randy.spl, xx))
     colnames(randy.fit) <- c('x', 'var1')
+    transfer.perms <- randy.fit[, 2]
+    colnames(transfer.perms) <- c(paste0('perm_', ix))
+    if (ix > 1) perm_retainer <- perm_output$perm_retainer
+    perm_retainer <- cbind(perm_retainer, transfer.perms)
+    perm_output$perm_retainer <- perm_retainer
+    
     p_base = randy.fit$var1[1]
     randy.fit$p_base <- p_base
     randy.fit$distance <- (randy.fit$var1 - randy.fit$p_base)
     perm.area <- sum(randy.fit$distance) / ints
     permuted <- append(permuted, perm.area)
-    return(permuted)
+    perm_output$permuted <- permuted
+    return(perm_output)
   }
   
   # Run the permutation over desired number of iterations
   permuted <- list()
-  permuted <- replicate(perms, 
-                       .spline_permute(randy = df, cases, xvar, yvar, permuted = permuted))
+  perm_output <- list()
+  perm_retainer <- data.frame(row.names = xx)
+  for (ix in 1:perms) {
+    perm_output <- .spline_permute(randy = df)
+  }
+  # permuted <- replicate(perms, 
+  #                      .spline_permute(randy = df, permuted = permuted))
   pval <- (sum(lapply(permuted, abs) >= abs(real.area)) + 1) / (perms + 1)
   
   # Return the p-value
   if (quiet == FALSE) {
     cat(paste('\np-value =', round(pval, digits = 5), '\n\n'))
   }
-  result <- list("pval" = pval, "imputed_curve" = spl.fit, "group_spline" = df.spl)
+  result <- list("pval" = pval, "imputed_curve" = spl.fit, "group_spline" = df.spl,
+                 "permuted_splines" = perm_output$perm_retainer)
   return(result)
 }
+
+
+
+#' @title Plot permuted trends behind the real data
+#' @description Compare how the permuted trend splines fit with the real data. Provides visual support for p values.
+#' @rdname trendyspliner.plot.perms
+#' @param data Required: The results object from the trendyspliner function
+#' @param xlabel Optional: Title (as string) to print on the x axis
+#' @param ylabel Optional: Title (as string) to print on the y axis
+#' @export
+#' @examples 
+#' permsplot <- trendyspliner.plot.perms(results, xlabel='Time', ylabel='Weight')
+#' 
+#' # View the plot
+#' permsplot
+#' 
+#' # Save the plot as PNG file
+#' ggsave(permsplot, file = 'my_plot.png', dpi=300, height=4, width=4)
+#' 
+
+
+trendyspliner.plot.perms <- function(data = NULL, xlabel=NULL, ylabel=NULL) {
+  require(ggplot2)
+  require(reshape2)
+  if (is.null(data)) stop('Missing required arugments.')
+  if (is.null(xlabel)) xlabel <- 'longitudinal axis'
+  if (is.null(ylabel)) ylabel <- 'response axis'
+  
+  permsplines <- data['permuted_splines'][[1]]
+  # permsplines <- permsplines[, grep('perm', colnames(permsplines))]
+  num_perms <- ncol(permsplines)
+  permsplines$x.par <- rownames(permsplines); rownames(permsplines) <- NULL
+  permsplines <- melt(permsplines, id.vars = 'x.par', variable.name = 'permutation',
+                      value.name = 'y.par')
+  true_v1 <- data['imputed_curve'][[1]]
+  colnames(true_v1) <- c('x','y')
+  num_points <- length(true_v1$x)
+  if (num_perms > 1000) {
+    alpha_level <- 0.002
+  } else if (num_perms >= 100) {
+    alpha_level <- 0.01
+  } else if (num_perms < 100) {
+    alpha_level <- 0.2
+  }
+  
+  p <- ggplot() +
+    geom_line(data=permsplines, aes(x=as.numeric(x.par), y=as.numeric(y.par),
+                                    group=factor(permutation)),
+              alpha=alpha_level, size=0.9) +
+    geom_line(data=true_data, aes(x=as.numeric(x), y=as.numeric(y)),
+              size=1.2, color = 'red') +
+    theme_classic() + theme(axis.text = element_text(color='black')) +
+    xlab(xvar) + ylab(yvar)
+  return(p)
+}
+
+

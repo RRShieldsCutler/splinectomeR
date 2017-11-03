@@ -85,7 +85,7 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
                                  spar = set_spar, tol = set_tol))
   x0 <- max(c(min(df_v1_spl$x)), min(df_v2_spl$x))
   x1 <- min(c(max(df_v1_spl$x)), max(df_v2_spl$x))
-  x0 <- x0 + ((x1 - x0) * 0.1)  # Trim the first and last 10% because of spline behavior
+  x0 <- x0 + ((x1 - x0) * 0.1)  # Trim the first and last 10% to avoid low-density artifacts
   x1 <- x1 - ((x1 - x0) * 0.1)
   xby <- (x1 - x0) / (ints - 1)
   xx <- seq(x0, x1, by = xby)
@@ -130,9 +130,8 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
       if (ix > 1) perm_retainer <- perm_output$perm_retainer
       perm_retainer <- cbind(perm_retainer, transfer_perms)
       perm_output$perm_retainer <- perm_retainer
-      # print(summary(xx))
-      
       perm_area <- sum(spl_dist$abs_distance) / ints
+      
       if (ix > 1) permuted <- perm_output$permuted
       permuted <- append(permuted, perm_area)
       perm_output$permuted <- permuted
@@ -231,7 +230,7 @@ permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
   } else if (num_perms >= 100) {
     alpha_level <- 0.02
   } else if (num_perms < 100) {
-    alpha_level <- 0.1
+    alpha_level <- 0.25
   }
   
   p <- ggplot() +
@@ -263,7 +262,6 @@ permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
 #' ggsave(permsplot, file = 'my_plot.png', dpi=300, height=4, width=4)
 #' 
 
-# TODO: Make the lines labeled by v1/v2!
 permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   if (is.null(data) | is.null(xvar) | is.null(yvar)) {
     stop('Missing required arugments.')
@@ -292,7 +290,7 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   } else if (num_perms >= 100) {
     alpha_level <- 0.01
   } else if (num_perms < 100) {
-    alpha_level <- 0.1
+    alpha_level <- 0.2
   }
   
   p <- ggplot() +

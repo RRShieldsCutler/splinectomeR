@@ -4,7 +4,7 @@
 \alias{permuspliner.plot.permsplines}
 \title{Plot permuted splines along the real data}
 \usage{
-permuspliner.plot.permsplines(data, xvar = NULL, yvar = NULL)
+permuspliner.plot.permsplines(data = NULL, xvar = NULL, yvar = NULL)
 }
 \arguments{
 \item{data}{The results object from the permuspliner function}
