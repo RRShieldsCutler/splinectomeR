@@ -6,7 +6,9 @@ output: html_document
 ***
   
 ### Installation:
-To install from GitHub, use the `devtools` package. Once you have that installed and loaded, run the following to install splinectomeR:
+Recommended: Install v.0.9.0 from the pre-release, [here](https://github.com/RRShieldsCutler/splinectomeR/releases/tag/v0.9.0).
+
+To install the latest development version from GitHub, you can use the `devtools` package. Beware, this version is actively worked on and may not be stable; therefore we highly recommend installing the pre-release. To install with devtools, run the following command:
 ```R
 > devtools::install_github('RRShieldsCutler/splinectomeR')
 > library(splinectomeR)
