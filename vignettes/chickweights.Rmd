@@ -85,7 +85,7 @@ To test this, you can use the `slidingspliner()` function. The result is a table
 ```{r}
 result <- sliding_spliner(data = ChickWeight, xvar = 'Time', yvar = 'weight',
                           cases = 'Chick', category = 'Diet', groups = '1,2')
-sliding_spliner.plot.pvals(result$pval, xvar = 'Time')
+sliding_spliner.plot.pvals(result, xvar = 'Time')
 ```
   
 The defaul is 100 intervals, but if you have a very long or short timeseries, you might want more or less intervals, respectively. Here you can see what it looks like with just 5 intervals:  
@@ -93,7 +93,7 @@ The defaul is 100 intervals, but if you have a very long or short timeseries, yo
 ```{r}
 result <- sliding_spliner(data = ChickWeight, xvar = 'Time', yvar = 'weight',
                           cases = 'Chick', category = 'Diet', groups = '1,2', ints = 5)
-sliding_spliner.plot.pvals(result$pval, xvar = 'Time')
+sliding_spliner.plot.pvals(result, xvar = 'Time')
 ```
   
 There is a line at _p_ = 0.05, and the y-axis is log-scaled for visual clarity. You can always make your own plot from the stored results table as well, if this plotting does not fulfill your needs. Here, dots are scaled in size according to the number of original observations that support that interval; that is, the dots become smaller toward the 20 day time point because there are less overall data points in the dataset being used to calculate the splines and resulting p-values there. You can think of it as a quick visual confidence measure.  
