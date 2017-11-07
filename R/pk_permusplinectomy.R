@@ -270,7 +270,7 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   require(reshape2)
   permsplines <- data['permuted_splines'][[1]]
   permsplines <- permsplines[, grep('perm', colnames(permsplines))]
-  num_perms <- ncol(permsplines)
+  num_perms <- ncol(permsplines) / 2
   permsplines$x.par <- rownames(permsplines); rownames(permsplines) <- NULL
   permsplines <- melt(permsplines, id.vars = 'x.par', variable.name = 'permutation',
                       value.name = 'y.par')

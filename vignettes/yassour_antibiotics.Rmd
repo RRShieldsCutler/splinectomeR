@@ -11,7 +11,7 @@ vignette: >
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.width = 5, fig.height = 4, fig.align = "center")
+knitr::opts_chunk$set(echo = TRUE, fig.width = 4.5, fig.height = 4, fig.align = "center")
 
 ```
 
@@ -173,12 +173,11 @@ plot.df <- separate(plot.df, col = family, sep = 'f__', remove = T,
                     into = c('uplevel', 'family'))
 plot.df$uplevel <- NULL
 
-p <- ggplot(plot.df, aes(color = family, x = timepoint, y = relative_abundance)) +
+ggplot(plot.df, aes(color = family, x = timepoint, y = relative_abundance)) +
   theme_bw() + geom_smooth(method='loess', span = 0.5) +
   labs(x = 'months', y = 'relative abundance') +
   theme(legend.position = 'right') + scale_x_continuous(breaks = c(0,12,24,36)) +
   theme(panel.grid = element_blank())
-p
 ```
 
 We included a few more families, but the plot is a very close match to Figure 1B.  
@@ -214,7 +213,7 @@ We might also ask whether _Bacteroidaceae_ abundance increases or decreases over
 ```{r bacteroidaceae trend splines}
 trendy_result <- trendyspliner(data = f__Bacteroidaceae.top_family_meta,
                                xvar = 'timepoint', quiet = F, cases = 'baby_id',
-                               mean_center = T, yvar = 'relative_abundance', perms = 99)
+                               mean_center = T, yvar = 'relative_abundance', perms = 999)
 ```
 
 We can use the same test and ask a similar question about other categorical variables. For exaple, maybe there are different trends in the 'mixed' vs 'only breastmilk' in-hospital feeding categories.  
@@ -223,11 +222,11 @@ We can use the same test and ask a similar question about other categorical vari
 result_mixedfeed <- trendyspliner(data = f__Bacteroidaceae.top_family_meta,
                                   xvar = 'timepoint', quiet = F, cases = 'baby_id',
                                   mean_center = T, category = 'feeding_in_hospital',
-                                  group = 'mixed', yvar = 'relative_abundance', perms = 99)
+                                  group = 'mixed', yvar = 'relative_abundance')
 result_breastmilk <- trendyspliner(data = f__Bacteroidaceae.top_family_meta, 
                                    xvar = 'timepoint', quiet = F, cases = 'baby_id',
                                    mean_center = T, category = 'feeding_in_hospital',
-                                   group = 'OnlyBreastmilk', yvar = 'relative_abundance', perms = 99)
+                                   group = 'OnlyBreastmilk', yvar = 'relative_abundance')
 ```
 
 Both are significant, meaning the abundance of _Bacteroidaceae_ is non-linear over this time course. But remember, we'd have to plot it to know what direction each is going.  
@@ -267,7 +266,7 @@ Porphyromonadaceae.top_family_meta <- top20_family_meta %>%
   filter(family == 'k__Bacteria.p__Bacteroidetes.c__Bacteroidia.o__Bacteroidales.f__Porphyromonadaceae')
 porph.result <- permuspliner(data = Porphyromonadaceae.top_family_meta,
                              xvar = 'timepoint',
-                             yvar = 'relative_abundance', perms = 99,
+                             yvar = 'relative_abundance',
                              category = 'antibiotics_y_n', cases = 'baby_id',
                              cut_low = 6, quiet = T, retain_perm = T)
 permuspliner.plot.permsplines(data = porph.result,
@@ -382,7 +381,7 @@ head(all_phyla_meta$baby_id_phylum)
 # Now, let's use the Phyla as the category, instead of antibiotics
 firm_vs_oides_result <- permuspliner(data = all_phyla_meta, xvar = 'timepoint',
                       yvar = 'relative_abundance', cases = 'baby_id_phylum',
-                      perms = 99, category = 'phyla',
+                      perms = 999, category = 'phyla',
                       groups = 'k__Bacteria.p__Bacteroidetes,k__Bacteria.p__Firmicutes',
                       retain_perm = T)
 permuspliner.plot.permsplines(firm_vs_oides_result,
@@ -551,7 +550,7 @@ We can also look more finely at the differences at each interval of time.
 alpha_slide <- sliding_spliner(data = alphadiv_meta, xvar = 'timepoint',
                                yvar = 'shannon', category = 'birth_mode',
                                cases = 'baby_id', set_spar = 0.5)
-sliding_spliner.plot.pvals(alpha_slide$pval_table, xvar = 'timepoint')
+sliding_spliner.plot.pvals(alpha_slide, xvar = 'timepoint')
 ```
   
 
