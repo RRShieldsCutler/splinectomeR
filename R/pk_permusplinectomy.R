@@ -230,7 +230,7 @@ permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
   } else if (num_perms >= 100) {
     alpha_level <- 0.02
   } else if (num_perms < 100) {
-    alpha_level <- 0.35
+    alpha_level <- 0.3
   }
   
   p <- ggplot() +
@@ -287,10 +287,10 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   num_points <- length(true_v1$x)
   if (num_perms > 1000) {
     alpha_level <- 0.002
-  } else if (num_perms >= 100) {
+  } else if (num_perms > 100) {
     alpha_level <- 0.01
-  } else if (num_perms < 100) {
-    alpha_level <- 0.4
+  } else if (num_perms <= 100) {
+    alpha_level <- 0.37
   }
   
   p <- ggplot() +
