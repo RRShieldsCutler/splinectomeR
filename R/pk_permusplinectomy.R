@@ -230,7 +230,7 @@ permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
   } else if (num_perms >= 100) {
     alpha_level <- 0.02
   } else if (num_perms < 100) {
-    alpha_level <- 0.3
+    alpha_level <- 0.25
   }
   
   p <- ggplot() +
@@ -270,7 +270,7 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   require(reshape2)
   permsplines <- data['permuted_splines'][[1]]
   permsplines <- permsplines[, grep('perm', colnames(permsplines))]
-  num_perms <- ncol(permsplines) / 2
+  num_perms <- (ncol(permsplines) / 2)
   permsplines$x.par <- rownames(permsplines); rownames(permsplines) <- NULL
   permsplines <- melt(permsplines, id.vars = 'x.par', variable.name = 'permutation',
                       value.name = 'y.par')
@@ -290,13 +290,13 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   } else if (num_perms > 100) {
     alpha_level <- 0.01
   } else if (num_perms <= 100) {
-    alpha_level <- 0.37
+    alpha_level <- 0.31
   }
   
   p <- ggplot() +
     geom_line(data=permsplines, aes(x=as.numeric(x.par), y=as.numeric(y.par),
                                       group=factor(permutation)),
-              alpha=alpha_level, size=0.9) +
+              alpha=alpha_level, size=1) +
     geom_line(data=true_data, aes(x=as.numeric(x), y=as.numeric(y), color=factor(var)),
               size=1.2) +
     scale_color_manual(name='', values=c('red','blue'), labels=c(var_1, var_2)) +
