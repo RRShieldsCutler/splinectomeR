@@ -399,27 +399,22 @@ phyla_tax_metadata_ratio$firm_to_bact <- (phyla_tax_metadata$k__Bacteria.p__Firm
 firm_to_bact_result <- trendyspliner(data = phyla_tax_metadata_ratio,
                                      xvar = 'timepoint', yvar = 'firm_to_bact',
                                      cases = 'baby_id', mean_center = F)
-# Plot the trend
-p <- ggplot(phyla_tax_metadata_ratio, aes(x=timepoint, y=firm_to_bact)) + 
-  geom_smooth(method = 'loess') +
-  theme_bw() + theme(panel.grid = element_blank()) +
-  ylab('Firmicutes to Bacteroidetes ratio')
-p
 
 # Check the difference between birth modes
 # (antibiotic use not really different, not shown)
 firm_bact_birthmode_result <- permuspliner(data = phyla_tax_metadata_ratio,
                                            xvar = 'timepoint', yvar = 'firm_to_bact',
                                            cases = 'baby_id', category = 'birth_mode',
-                                           retain_perm = T)
-
+                                           retain_perm = T, quiet = T, perms = 99)
+firm_bact_birthmode_result$pval
 permuspliner.plot.permsplines(firm_bact_birthmode_result,
                               xvar = 'timepoint', yvar = 'firm_to_bact')
+permuspliner.plot.permdistance(firm_bact_birthmode_result, xlabel = 'time')
 ```
 
-These results tell us that the Firmicutes/Bacteroidetes ratio is indeed changing over these three years, and presents as a significantly distinct trend between C-section and vaginally born babies (with the limitation of small C-section cohort). A quick test with these functions!  
+These results tell us that the Firmicutes/Bacteroidetes ratio is indeed changing over these three years, and presents as a significantly distinct trend between C-section and vaginally born babies (with the limitation of small C-section cohort). This demonstrates how this hypothesis is quickly and straightforwardly tested with these tools. Also, the plots still show how noisy the data is -- the large peaks out from the norm only result because there is considerable variability that, when shuffled in the right way, creates large differences by chance.  
   
-Let's look similarly at another ratio that gets attention: _Bacteroides_ vs _Prevotella_ (Genus):  
+Let's look similarly at another ratio that is often studied in microbiome analyses: _Bacteroides_ vs _Prevotella_ (Genera), with the caveat that these have mostly focused on adult samples.  
 
 ```{r Bacteroides vs Prevotella, fig.width=7, fig.height=4}
 genus_tax_metadata_ratio <- genus_tax_metadata
@@ -430,7 +425,7 @@ genus_tax_metadata_ratio$prev_bact_ratio <-
 
 prev_bact_result <- trendyspliner(data = genus_tax_metadata_ratio, xvar = 'timepoint',
                                   yvar = 'prev_bact_ratio', cases = 'baby_id',
-                                  mean_center = F, perms = 99)
+                                  mean_center = T, perms = 99)
 # Plot the trend
 trendyspliner.plot.perms(prev_bact_result, xlabel = 'time', ylabel = 'Prevotella:Bacteroides ratio')
 
@@ -445,7 +440,7 @@ permuspliner.plot.permsplines(firm_bact_birthmode_result,
                               xvar = 'timepoint', yvar = 'prev_bact_ratio')
 ```
 
-Interestingly, and in contrast to the F:B ratio, the _Bacteroides:Prevotella_ abundance ratio does not significantly change in any one coherent direction over time. In fact, there is so little _Prevotella_ present in these babies that the results are harder to interpret; _Prevotella_ appears to be mostly abundant in the C-section babies, and this is what likely drives the permuspliner p value lower.  
+Looking at the value of the ratio indicates that there is so little _Prevotella_ present in these babies that the results are harder to interpret; _Prevotella_ appears to be mostly abundant in the C-section babies, and this is what likely drives the permuspliner p value lower.  
 
 ## Other hypotheses we can test
   
@@ -579,11 +574,11 @@ alpha_trendresult_noabx <- trendyspliner(data = alphadiv_meta, xvar = 'timepoint
 Alpha diversity increases significantly in both groups, but the trends are not significantly different over time between antibiotics (from the previous tests).  
 
 ## Conclusions
-Yassour et al. present a tremendous, dense longitudinal study that details the human gut microbiome's complex dynamics over the first three years of life. They also have generated categorical variables with which the microbiome data can be compared by cataloging antibiotic exposure, delivery mode, and feeding patterns.  
+Yassour et al. present a monumental dataset with dense longitudinal data that details the human gut microbiome's complex dynamics over the first three years of life. They also have recorded data on several variables which the microbiome patterns can be investigated, including antibiotic exposure, delivery mode, and feeding patterns.  
   
-The remaining challenge is a lack of clear methods to directly compare data across multiple individuals and many time points, in particular when those time points are not in sync, without averaging or adding across multiple points, or subsetting and dropping many of the points. In both cases, the longitudinal density is not being leveraged appropriately.  
+A remaining challenge in analyses like these is a lack of clear, simple methods to directly compare data across multiple individuals and many time points--in particular when those time points are not in sync--without averaging or adding across multiple points, or subsetting and dropping many of the data points. In both cases, the longitudinal density is not being leveraged to its full possible extent.  
   
-In this vignette, we've shown how these `splinectomeR` tools can quickly assess statistical significance by summarizing group data with splines and generating randomly permuted distributions to evaluate the probability that the true magnitude of difference is due to chance. By employing the three test functions, we can explore overall changes in abundances or metrics, and explore longitudinal trends between two categorical groups.  
+In this vignette, we've shown how these `splinectomeR` tools can quickly assess statistical significance by summarizing group data with splines and generating randomly permuted distributions to evaluate the probability that the true magnitude of difference is due to chance. By employing the three test functions, we can explore overall changes in abundances or metrics, and compare longitudinal trends between two categorical groups.  
   
 The approaches here provide statistical support for proposals the authors have drawn, and allow us to test supplemental hypotheses. Importantly, we are able to perform these tests in a way that takes full advantage of the longitudinal data and maintains the individual observations.
 
