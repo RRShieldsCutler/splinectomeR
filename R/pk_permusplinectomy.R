@@ -176,8 +176,8 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
     cat(paste('\np-value =', round(pval, digits = 5), '\n\n'))
   }
   v1_data <- df_v1; v2_data <- df_v2
-  v1_data[, category] <- droplevels(v1_data[, category])
-  v2_data[, category] <- droplevels(v2_data[, category])
+  v1_data[, category] <- droplevels(factor(v1_data[, category]))
+  v2_data[, category] <- droplevels(factor(v2_data[, category]))
   
   # Return the results list
   if (retain_perm == TRUE) {
@@ -230,7 +230,7 @@ permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
   } else if (num_perms >= 100) {
     alpha_level <- 0.02
   } else if (num_perms < 100) {
-    alpha_level <- 0.25
+    alpha_level <- 0.35
   }
   
   p <- ggplot() +
@@ -290,7 +290,7 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   } else if (num_perms >= 100) {
     alpha_level <- 0.01
   } else if (num_perms < 100) {
-    alpha_level <- 0.2
+    alpha_level <- 0.4
   }
   
   p <- ggplot() +

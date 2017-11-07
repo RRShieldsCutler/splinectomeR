@@ -17,6 +17,8 @@ trendyspliner.plot.perms(data = NULL, xlabel = NULL, ylabel = NULL)
 Compare how the permuted trend splines fit with the real data. Provides visual support for p values.
 }
 \examples{
+
+# Loads ggplot2 dependency
 permsplot <- trendyspliner.plot.perms(results, xlabel='Time', ylabel='Weight')
 
 # View the plot
