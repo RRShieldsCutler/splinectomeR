@@ -13,7 +13,7 @@
 #' @param cases The column name defining the individual cases, e.g. patients.
 #' @param groups If more than two groups, the two groups to compare.
 #' @param perms The number of permutations to generate
-#' @param retain_perm Retain permuted spline data for permutation confidence interval plotting (default FALSE for speed)
+#' @param retain_perm Retain permuted spline data for permutation confidence interval plotting (set to FALSE for less memory)
 #' @param test_direction Test whether the groups are significantly 'more' or significantly 'less' distinct than expected by random chance. Default is 'more'.
 #' @param set_spar Set the spar parameter for splines
 #' @param set_tol In rare cases, must manually set the tol parameter (default 1e-4)
@@ -30,7 +30,7 @@
 
 
 permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
-                         cases = NULL, groups = NA, perms = 999, retain_perm = FALSE,
+                         cases = NULL, groups = NA, perms = 999, retain_perm = TRUE,
                          test_direction = 'more', set_spar = NULL, cut_low = NA,
                          ints = 1000, quiet = FALSE, set_tol = 1e-4, cut_sparse = 4) {
 
@@ -265,6 +265,9 @@ permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
 permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   if (is.null(data) | is.null(xvar) | is.null(yvar)) {
     stop('Missing required arugments.')
+  }
+  if (is.null(data['permuted_splines'][[1]])) {
+    stop('Permuted data not in results. Did you set "retain_perms = TRUE" ?')
   }
   require(ggplot2)
   require(reshape2)

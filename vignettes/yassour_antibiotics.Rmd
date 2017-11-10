@@ -495,7 +495,7 @@ colnames(clostrid_tax_metadata)
 
 clostrid_result <- permuspliner(data = clostrid_tax_metadata,
                                 xvar = 'timepoint', yvar = 'clostridSum',
-                                perms = 99, category = 'antibiotics_y_n',
+                                perms = 999, category = 'antibiotics_y_n',
                                 cases = 'baby_id', retain_perm = T)
 ```
 
@@ -509,9 +509,10 @@ Interesting - they nearly converge where the authors were testing the difference
 Side note: if you remove _Faecalibacterium_, the difference even slightly stronger overall but at 36 months they are much more similar; therefore, without testing across the full time course, as enabled by splinectomeR, you would not detect a difference with that timepoint.  
 
 #### Does alpha diversity differ, or change differently, over time?
-First, calculate the Shannon diversity (using the `vegan` package) from the OTU table, and add the metadata.  
+First, calculate the Shannon diversity (using the `vegan` package) from the OTU table, and add the metadata. We don't have the raw counts, so we will just filter to a Genus table and calculate the Shannon diversity from that.  
 ```{r alpha diversity}
-alphadiv <- as.data.frame(diversity(t(otus[,2:ncol(otus)]), 'shannon'))
+otus_genus <- otus %>% filter(!grepl('s__', otus$OTU_ID) & grepl('g__', otus$OTU_ID))
+alphadiv <- as.data.frame(diversity(t(otus_genus[,2:ncol(otus_genus)]), 'shannon'))
 alphadiv <- tibble::rownames_to_column(alphadiv, var = 'sampleID')
 colnames(alphadiv)[2] <- 'shannon'
 alphadiv <- alphadiv %>% separate(sampleID, c('baby_id', 'timepoint'), sep = '_')
@@ -553,7 +554,7 @@ Another hypothesis surrounding babies in the first years of life is that their o
 ```{r alpha div trends}
 alpha_trendresult_all <- trendyspliner(data = alphadiv_meta, xvar = 'timepoint',
                                        yvar = 'shannon', cases = 'baby_id',
-                                       perms = 99, mean_center = F)
+                                       perms = 99)
 
 # And to visualize the trend in the context of the permuted data
 trendyspliner.plot.perms(alpha_trendresult_all, xlabel = 'time', ylabel = 'Shannon diversity')
@@ -561,13 +562,13 @@ trendyspliner.plot.perms(alpha_trendresult_all, xlabel = 'time', ylabel = 'Shann
 # Now in antibiotic exposed infants
 alpha_trendresult_abx <- trendyspliner(data = alphadiv_meta, xvar = 'timepoint',
                                        yvar = 'shannon', cases = 'baby_id', perms = 99,
-                                       mean_center = F, category = 'antibiotics_y_n',
+                                       category = 'antibiotics_y_n',
                                        group = 'Y')
 
 # And in infants not exposed to antibiotics
 alpha_trendresult_noabx <- trendyspliner(data = alphadiv_meta, xvar = 'timepoint',
                                          yvar = 'shannon', cases = 'baby_id',
-                                         perms = 99, mean_center = F,
+                                         perms = 99,
                                          category = 'antibiotics_y_n', group = 'N')
 ```
   

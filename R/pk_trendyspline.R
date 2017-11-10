@@ -21,7 +21,7 @@
 #' @param category The column name of the category to be tested, if present.
 #' @param cases The column name defining the individual cases, e.g. patients.
 #' @param group If more than one group in the data, the group to compare.
-#' @param mean_center Before processing, mean center data by individual/case
+#' @param mean_center Before processing, mean center data by individual/case (default FALSE)
 #' @param perms The number of permutations to generate
 #' @param set_spar Set the spar parameter for splines
 #' @param cut_low Remove data with fewer than __ points
@@ -35,7 +35,7 @@
 #' result$pval
 
 trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
-                         cases = NULL, group = NULL, mean_center = TRUE, perms = 999, set_spar = NULL,
+                         cases = NULL, group = NULL, mean_center = FALSE, perms = 999, set_spar = NULL,
                          cut_low = NULL, ints = 1000, quiet = FALSE) {
   
   
