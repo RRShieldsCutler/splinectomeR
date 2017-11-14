@@ -49,6 +49,7 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
   groups = as.character(groups)
   
   in_df <- data
+  # Determine the two groups to compare
   if (is.na(groups)) {
     if (length(unique(in_df[, category])) > 2) {
       stop('More than two groups in category column. Define groups with (groups = "Name1,Name2")')
@@ -59,7 +60,7 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
     v1 <- as.character(strsplit(groups, ',')[[1]][1])
     v2 <- as.character(strsplit(groups, ',')[[1]][2])
   }
-  
+  # Trim data if some cases have too few observations
   if (!is.na(cut_low)) {
     cut_low <- as.numeric(cut_low)
     keep_ids <- data.frame(table(in_df[, cases]))
@@ -77,6 +78,7 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
   if (length(df_v1[, xvar]) < cut_sparse | length(df_v2[, xvar]) < cut_sparse) {
     stop('Not enough data in each group to fit spline')
   }
+  # Fit the splines for each group
   df_v1_spl <- with(df_v1,
                    smooth.spline(x=df_v1[, xvar], y=df_v1[, yvar],
                                  spar = set_spar, tol = set_tol))
@@ -88,24 +90,25 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
   x0 <- x0 + ((x1 - x0) * 0.1)  # Trim the first and last 10% to avoid low-density artifacts
   x1 <- x1 - ((x1 - x0) * 0.1)
   xby <- (x1 - x0) / (ints - 1)
-  xx <- seq(x0, x1, by = xby)
-  v1_spl_f <- data.frame(predict(df_v1_spl, xx))
+  xx <- seq(x0, x1, by = xby)  # Set the interval range
+  v1_spl_f <- data.frame(predict(df_v1_spl, xx))  # Interpolate across the spline
   colnames(v1_spl_f) <- c('x', 'var1')
   v2_spl_f <- data.frame(predict(df_v2_spl, xx))
   colnames(v2_spl_f) <- c('x', 'var2')
   real_spl_dist <- merge(v1_spl_f, v2_spl_f, by = 'x')
-  real_spl_dist$abs.distance <- abs(real_spl_dist$var1 - real_spl_dist$var2)
-  real_area <- sum(real_spl_dist$abs.distance) / ints
+  real_spl_dist$abs.distance <- abs(real_spl_dist$var1 - real_spl_dist$var2)  # Measure the real group distance
+  real_area <- sum(real_spl_dist$abs.distance) / ints  # Calculate the area between the groups
   
   # Define the permutation function
-  case_shuff <- 'case_shuff'
+  case_shuff <- 'case_shuff'  # Dummy label
   .spline_permute <- function(randy) {
-    randy_meta <- randy[!duplicated(randy[, cases]), ]
-    randy_meta$case_shuff <- sample(randy_meta[, category])
+    randy_meta <- randy[!duplicated(randy[, cases]), ]  # Pull out the individual IDs
+    randy_meta$case_shuff <- sample(randy_meta[, category])  # Shuffle the labels
     randy_meta <- randy_meta[, c(cases, case_shuff)]
     randy <- merge(randy, randy_meta, by = cases, all = T)
     randy_v1 <- randy[randy[, case_shuff] %in% c(v1) & !is.na(randy[, xvar]), ]
     randy_v2 <- randy[randy[, case_shuff] %in% c(v2) & !is.na(randy[, xvar]), ]
+    # Fit the splines for the permuted groups
     randy_v1_spl <- with(randy_v1,
                         smooth.spline(x=randy_v1[, xvar], y=randy_v1[, yvar],
                                       spar = set_spar, tol = set_tol))
@@ -121,7 +124,7 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
     randy_v2_fit <- data.frame(predict(randy_v2_spl, xx))
     colnames(randy_v2_fit) <- c('x', 'var2')
     spl_dist <- merge(randy_v1_fit, randy_v2_fit, by = 'x')
-    spl_dist$abs_distance <- abs(spl_dist$var1 - spl_dist$var2)
+    spl_dist$abs_distance <- abs(spl_dist$var1 - spl_dist$var2)  # Calculate the distance between permuted groups
     if (retain_perm == TRUE) {
       transfer_perms <- spl_dist[, 2:4]
       colnames(transfer_perms) <- c(paste0('v1perm_',ix),
@@ -130,7 +133,7 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
       if (ix > 1) perm_retainer <- perm_output$perm_retainer
       perm_retainer <- cbind(perm_retainer, transfer_perms)
       perm_output$perm_retainer <- perm_retainer
-      perm_area <- sum(spl_dist$abs_distance) / ints
+      perm_area <- sum(spl_dist$abs_distance) / ints  # Calculate the area between permuted groups
       
       if (ix > 1) permuted <- perm_output$permuted
       permuted <- append(permuted, perm_area)
@@ -175,6 +178,7 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
   if (quiet == FALSE) {
     cat(paste('\np-value =', round(pval, digits = 5), '\n\n'))
   }
+  # Return the filtered data used for the splines and permutations
   v1_data <- df_v1; v2_data <- df_v2
   v1_data[, category] <- droplevels(factor(v1_data[, category]))
   v2_data[, category] <- droplevels(factor(v2_data[, category]))

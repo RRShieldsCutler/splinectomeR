@@ -50,7 +50,7 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   
   df <- data
   
-  
+  # Determine the group to be tested
   if (!is.null(category)) {
     if (is.null(group)) {
       group <- as.character(group)
@@ -65,6 +65,7 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   } else if (is.null(category)) df <- df
   df <- df[!is.na(df[, xvar]), ]
   
+  # Trim data if needed to remove low-observation cases
   if (!is.null(cut_low)) {
     cut_low <- as.numeric(cut_low)
     keep.ids <- data.frame(table(df[, cases]))
@@ -77,7 +78,7 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
     cat(paste('\nPerforming the trendyspline test with', perms, 'permutations...\n'))
   }
   
-  
+  # Mean center the data if called for to remove bias from divergent starting points
   if (mean_center == TRUE) {
     if (quiet == FALSE) {
       cat(paste('\nMean centering the data...\n'))
@@ -102,7 +103,7 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
     df <- do.call(rbind, df_adj)
   }
   
-  
+  # Fit the spline
   df.spl <- with(df,
                    smooth.spline(x=df[, xvar], y=df[, yvar],
                                  spar = set_spar))
@@ -110,21 +111,22 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   x1 <- max(df.spl$x)
   x0 <- x0 + ((x1 - x0) * 0.05)  # Trim the first and last 5% to avoid low-density artifacts
   x1 <- x1 - ((x1 - x0) * 0.05)
-  xby <- (x1 - x0) / (ints - 1)
-  xx <- seq(from = x0, to = x1, by = xby)
-  spl.fit <- data.frame(predict(df.spl, xx))
+  xby <- (x1 - x0) / (ints - 1)  # Set the range
+  xx <- seq(from = x0, to = x1, by = xby)  # Set the intervals for the test
+  spl.fit <- data.frame(predict(df.spl, xx))  # Interpolate the spline over the intervals
   colnames(spl.fit) <- c('x', 'var1')
   y_base = spl.fit$var1[1]   # Null hypothesis: trend doesn't vary from zero over x axis
   real.spl.dist <- spl.fit
   spl.fit$y_base <- y_base
-  spl.fit$distance <- (spl.fit$var1 - spl.fit$y_base)
-  real.area <- sum(spl.fit$distance) / ints
+  spl.fit$distance <- (spl.fit$var1 - spl.fit$y_base)  # Distance from spline to baseline - the nonzero magnitude
+  real.area <- sum(spl.fit$distance) / ints  # Calculate the area between the baseline and spline
   
   # Define the permutation function
-  y_shuff <- 'y_shuff'
+  y_shuff <- 'y_shuff'  # Dummy label
   .spline_permute <- function(randy) {
     randy.meta <- randy[, c(cases, xvar)]
     randy.meta$y_shuff <- sample(randy[, yvar])
+    # Fit the permuted spline
     randy.spl <- with(randy.meta, smooth.spline(x = randy.meta[, xvar],
                                               y = randy.meta$y_shuff,
                                               spar = set_spar))
@@ -137,11 +139,10 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
       perm_retainer <- merge(perm_retainer, transfer.perms, by = 'x')
     } else perm_retainer <- transfer.perms
     perm_output$perm_retainer <- perm_retainer
-    # if (ix > 1) colnames(perm_output)[ncol(perm_output)] <- paste0('perm_', ix)
-    p_base = randy.fit$var1[1]
+    p_base = randy.fit$var1[1]  # Baseline for the permuted distribution
     randy.fit$p_base <- p_base
     randy.fit$distance <- (randy.fit$var1 - randy.fit$p_base)
-    perm.area <- sum(randy.fit$distance) / ints
+    perm.area <- sum(randy.fit$distance) / ints  # Area above baseline for permutation
     permuted <- append(permuted, perm.area)
     perm_output$permuted <- permuted
     return(perm_output)

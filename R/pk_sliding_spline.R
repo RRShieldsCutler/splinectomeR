@@ -60,6 +60,7 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   
   df <- data
   
+  # Determine the groups to be compared
   if (is.na(groups)) {
     if (length(unique(df[, category])) > 2) {
       stop('More than two groups in category column. Define groups with groups = "Name1,Name2"')
@@ -103,11 +104,9 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   }
   
   # Prepare the spline table for statistical testing
-  # spl.table.p <- tibble::column_to_rownames(df = spl.table, var = 'x')
   spl.table.p <- spl.table
   rownames(spl.table.p) <- spl.table.p$x; spl.table.p$x <- NULL
   spl.table.p <- as.data.frame(t(spl.table.p))
-  # spl.table.p <- tibble::rownames_to_column(spl.table.p, var = cases)
   spl.table.p[, cases] <- rownames(spl.table.p); rownames(spl.table.p) <- NULL
   spl.table.p <- merge(spl.table.p, df.groups, by = cases, all = T)
   
