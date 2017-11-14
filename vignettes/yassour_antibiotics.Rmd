@@ -12,7 +12,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, fig.width = 4.5, fig.height = 4, fig.align = "center")
-
+set.seed(11)
 ```
 
 ## Demonstrating use of the splinectomeR package on a published dataset
@@ -37,6 +37,11 @@ library(tidyr)
 library(splinectomeR)
 library(vegan)
 ```
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
+
 
 First, we can extract the samples and their corresponding timepoints from the taxa table's header.  
 
@@ -187,28 +192,42 @@ We included a few more families, but the plot is a very close match to Figure 1B
 The `splinectomeR` package allows us to do a large number of statistical tests from this datatable using the longitudinal data. In the paper, statistical tests aren't performed across the intact longitudinal data, instead relying on visual comparisons of stream plots, for example, or on factors derived from the data, such as comparing consecutive-sample beta-diversity. With `splinectomeR`, we can quickly test whether abundance of a taxonomic unit (Family, Genus, etc) is significantly different across the time series between babies that had antibiotics and those who didn't, or male/female babies, birth mode, etc. We can also ask whether the abundance of a particular taxonomic unit is going up or down over time in a particular group (antibiotic exposed, female, etc).  
 
 ##### Family level differences between categorical groups
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
+
 ```{r bacteroidaceae comparison}
 # Test the difference between Bacteroidaceae abundance in
 #  antibiotic exposed vs. non-exposed conditions
 f__Bacteroidaceae.top_family_meta <- top_family_meta %>% filter(family == 'k__Bacteria.p__Bacteroidetes.c__Bacteroidia.o__Bacteroidales.f__Bacteroidaceae')
-result <- permuspliner(data = f__Bacteroidaceae.top_family_meta, xvar = 'timepoint',
+bacteroidaceae_result <- permuspliner(data = f__Bacteroidaceae.top_family_meta, xvar = 'timepoint',
                        yvar = 'relative_abundance', perms = 99,
-                       category = 'antibiotics_y_n', cases = 'baby_id')
+                       category = 'antibiotics_y_n', cases = 'baby_id', retain_perm = T)
+permuspliner.plot.permdistance(bacteroidaceae_result, xlabel = 'timepoint')
 ```
 
 This tells us that over the time course, the difference in _Bacteroidaceae_ abundance between antibiotic exposed and non-exposed infant microbiomes is not greater than expected by random chance. But, this is a very dynamic environment, and perhaps it is significant at some point along the time course. We can test that as well, using splinectomeR's `sliding_spliner` test.  
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
 
 ```{r bacteroidaceae sliding splines}
 slide_result <- sliding_spliner(data = f__Bacteroidaceae.top_family_meta,
                                 xvar = 'timepoint', yvar = 'relative_abundance',
                                 category = 'antibiotics_y_n', cases = 'baby_id',
                                 test_density = 10, cut_sparse = 7,
-                                set_spar = 0.5, quiet = F)
+                                set_spar = 0.5)
 sliding_spliner.plot.pvals(data = slide_result, xvar = 'timepoint')
 ```
 This shows that there are actually some significant differences near the 30-month window. There's also some interesting periodicity to the trend.  
   
 We might also ask whether _Bacteroidaceae_ abundance increases or decreases overall as the babies get older. The `trendyspliner` test allows us to see if the overall change in _Bacteroidaceae_ abundance is non-linear across all babies over the whole time course.  
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
 
 ```{r bacteroidaceae trend splines}
 trendy_result <- trendyspliner(data = f__Bacteroidaceae.top_family_meta,
@@ -217,6 +236,10 @@ trendy_result <- trendyspliner(data = f__Bacteroidaceae.top_family_meta,
 ```
 
 We can use the same test and ask a similar question about other categorical variables. For exaple, maybe there are different trends in the 'mixed' vs 'only breastmilk' in-hospital feeding categories.  
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
 
 ```{r bacteroidaceae feeding trends}
 result_mixedfeed <- trendyspliner(data = f__Bacteroidaceae.top_family_meta,
@@ -233,6 +256,10 @@ Both are significant, meaning the abundance of _Bacteroidaceae_ is non-linear ov
 
 #### Automating over all the Families
 Once we are analyzing in R, we can take a programmatic approach, and run the permutation test over all the top Families, and correct for false discovery rate on the resulting p-values.  
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
 
 ```{r top 20 families loop}
 top_20_families <- otus_family_sum[1:20, 2]
@@ -261,7 +288,12 @@ f_top20_abx_qvals <- p.adjust(f_top20_abx_pvals, method = 'fdr')  # Adjusted p v
 ```
   
 Let's see what the _Porphyromonadaceae_ plot looks like. You could subset the table to this Family and plot with your favorite plotting package. Or, the `permuspliner` test includes two plotting functions. One plots the permuted splines along with the interpolated spline fit for the real data. The other one plots the distances between the two variables, and the distances between the permuted versions. In the former, a significant result would show most of the permuted mass lying between the real data splines.  
-```{r zoom on porphyromonadaceae}
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
+
+```{r zoom on porphyromonadaceae, fig.height = 4, fig.width = 5}
 Porphyromonadaceae.top_family_meta <- top20_family_meta %>%
   filter(family == 'k__Bacteria.p__Bacteroidetes.c__Bacteroidia.o__Bacteroidales.f__Porphyromonadaceae')
 porph.result <- permuspliner(data = Porphyromonadaceae.top_family_meta,
@@ -288,9 +320,11 @@ This confirms what we would expect from the previous plot, showing that our conf
 
 Let's look at birth mode the same way.
 
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
+
 ```{r loop permutations on top20}
-# To do FDR on the pvalues, you can save them all in a list, then use p.adjust
-f__top20_pvals <- list()
 for (f in unique(top20_family_meta$family)) {
   f__df <- top20_family_meta %>% filter(family == f)
   print(f)
@@ -298,20 +332,21 @@ for (f in unique(top20_family_meta$family)) {
                        yvar = 'relative_abundance', perms = 99,
                        category = 'birth_mode', cases = 'baby_id',
                        cut_low = 6, quiet = T)
-  f__top20_pvals <- append(f__top20_pvals, f.result$pval)
   print(f.result$pval)
 }
-# Perform FDR on the pvalues list
-p.adjust(f__top20_pvals, method = 'fdr')
-```
-There are several families near significance ( _Bacteroidaceae_, _Lachnospiraceae_, _Veillonellaceae_, _Pasteurellaceae_, during the writing of this vignette) but not astonishing. Perhaps they are more so at a given time in the series. We can apply the same approach using the sliding spline function.
 
-```{r sliding spline on low pvalue families}
+```
+There are several families near significance ( _Bacteroidaceae_, _Porphyromonadaceae_, _Clostridiaceae_, _Veillonellaceae_, _Pasteurellaceae_, _Enterobacteriaceae_, during the writing of this vignette) but will not astonishing after adjusting for multiple comparisons. Perhaps they are more so at a given time in the series. We can apply the same approach using the sliding spline function.
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
+
+```{r sliding spline on a few low pvalue families}
 birthmode_families <- list(
   'k__Bacteria.p__Bacteroidetes.c__Bacteroidia.o__Bacteroidales.f__Bacteroidaceae',
-  'k__Bacteria.p__Firmicutes.c__Clostridia.o__Clostridiales.f__Lachnospiraceae',
-  'k__Bacteria.p__Firmicutes.c__Clostridia.o__Clostridiales.f__Veillonellaceae',
-  'k__Bacteria.p__Proteobacteria.c__Gammaproteobacteria.o__Pasteurellales.f__Pasteurellaceae')
+  'k__Bacteria.p__Proteobacteria.c__Gammaproteobacteria.o__Enterobacteriales.f__Enterobacteriaceae',
+  'k__Bacteria.p__Firmicutes.c__Clostridia.o__Clostridiales.f__Clostridiaceae')
 top20_family_meta$birth_mode <- gsub(x = top20_family_meta$birth_mode,
                                      pattern = ' ',replacement = '_', fixed = T)
 slideplots <- function(xx) {
@@ -332,6 +367,10 @@ In the original paper, they also tested for differences in response to antibioti
   
 Toa test that here, first we'll prep the filtered dataframe.  
   
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
+
 ```{r filter to genus}
 otus_genus <- otus %>% filter(!grepl('s__', otus$OTU_ID) & grepl('g__', otus$OTU_ID))
 # Run the function defined above
@@ -347,6 +386,11 @@ colnames(bacteroides_genus_meta)
 ```
 
 Now we can run the splinectomeR test.  
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
+
 ```{r perumtation test on bacteroides genus}
 Bacteroides_abx_result <- permuspliner(data = bacteroides_genus_meta, xvar = 'timepoint',
                                        yvar = 'relative_abundance', cases = 'baby_id',
@@ -362,6 +406,11 @@ permuspliner.plot.permdistance(Bacteroides_abx_result, xlabel = 'timepoint')
   
 #### Does the ratio of Firmicutes to Bacteroidetes change over time?
 One parameter that is often studied in the microbiome is the ratio of Firmicutes to Bacteroidetes (Phlya) within individuals, and the correlations between changes in the F:B ratio and risk for health conditions like obesity ( [Ley et al., 2006](https://www.nature.com/nature/journal/v444/n7122/full/4441022a.html) ). Typically, infants have a low ratio (greater Bacteroidetes) but this is inverted in adults ( [Mariat et al., 2009](https://bmcmicrobiol.biomedcentral.com/articles/10.1186/1471-2180-9-123) ). Let's look at this ratio across all babies.  
+
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
 
 ```{r phylum level parsing}
 # Filter and merge with mapping
@@ -391,6 +440,10 @@ permuspliner.plot.permsplines(firm_vs_oides_result,
 
 *BEWARE!* These are relative abundances! So if studying two major phyla, when one goes down _in proportion_, the other expands _in proportion_. In most cases, one **should not** be comparing the relative abundance of two major bugs using the tool like this (it won't stop you, but neither will the edge of that cliff...). What we can do is either look at them individually (Do Bacteroidetes go up/down over time? Do Firmicutes?) or measure the ratio and then look at whether the change in the F:B ratio is non-zero over time. These questions can be answered using splinectomeR's `trendyspliner` test.  
 
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
+
 ```{r Phylum ratio analysis, fig.width=7, fig.height=4}
 phyla_tax_metadata_ratio <- phyla_tax_metadata
 phyla_tax_metadata_ratio$firm_to_bact <- (phyla_tax_metadata$k__Bacteria.p__Firmicutes /
@@ -405,16 +458,17 @@ firm_to_bact_result <- trendyspliner(data = phyla_tax_metadata_ratio,
 firm_bact_birthmode_result <- permuspliner(data = phyla_tax_metadata_ratio,
                                            xvar = 'timepoint', yvar = 'firm_to_bact',
                                            cases = 'baby_id', category = 'birth_mode',
-                                           retain_perm = T, quiet = T, perms = 99)
+                                           quiet = T, perms = 99)
 firm_bact_birthmode_result$pval
-permuspliner.plot.permsplines(firm_bact_birthmode_result,
-                              xvar = 'timepoint', yvar = 'firm_to_bact')
-permuspliner.plot.permdistance(firm_bact_birthmode_result, xlabel = 'time')
 ```
 
 These results tell us that the Firmicutes/Bacteroidetes ratio is indeed changing over these three years, and presents as a significantly distinct trend between C-section and vaginally born babies (with the limitation of small C-section cohort). This demonstrates how this hypothesis is quickly and straightforwardly tested with these tools. Also, the plots still show how noisy the data is -- the large peaks out from the norm only result because there is considerable variability that, when shuffled in the right way, creates large differences by chance.  
   
 Let's look similarly at another ratio that is often studied in microbiome analyses: _Bacteroides_ vs _Prevotella_ (Genera), with the caveat that these have mostly focused on adult samples.  
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
 
 ```{r Bacteroides vs Prevotella, fig.width=7, fig.height=4}
 genus_tax_metadata_ratio <- genus_tax_metadata
@@ -426,25 +480,23 @@ genus_tax_metadata_ratio$prev_bact_ratio <-
 prev_bact_result <- trendyspliner(data = genus_tax_metadata_ratio, xvar = 'timepoint',
                                   yvar = 'prev_bact_ratio', cases = 'baby_id',
                                   mean_center = T, perms = 99)
-# Plot the trend
-trendyspliner.plot.perms(prev_bact_result, xlabel = 'time', ylabel = 'Prevotella:Bacteroides ratio')
 
 # Check the difference between birth modes (antibiotic use not really different, not shown)
 prev_bact_birthmode_result <- permuspliner(data = genus_tax_metadata_ratio,
                                            xvar = 'timepoint', yvar = 'prev_bact_ratio',
                                            cases = 'baby_id', category = 'birth_mode',
                                            perms = 99)
-
-# Plot the difference
-permuspliner.plot.permsplines(firm_bact_birthmode_result,
-                              xvar = 'timepoint', yvar = 'prev_bact_ratio')
 ```
 
-Looking at the value of the ratio indicates that there is so little _Prevotella_ present in these babies that the results are harder to interpret; _Prevotella_ appears to be mostly abundant in the C-section babies, and this is what likely drives the permuspliner p value lower.  
+If we look closely at the actual ratio values, they indicate that there is so little _Prevotella_ present in these babies that the results are harder to interpret; _Prevotella_ appears to be mostly abundant in the C-section babies, and this is what likely drives the permuspliner p value lower.  
 
 ## Other hypotheses we can test
   
 #### Does Bifidobacterium abundance look different at early timepoints based on feeding pattern in the hospital?
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
 
 ```{r bifido genus tests}
 bifidobacterium_genus_meta <- genus_tax_metadata %>%
@@ -468,11 +520,15 @@ This plot there's something about the period where many of the babies are beginn
 mean(as.numeric(metadata$months_end_breastfeeding))
 ```
 
-#### Are there differences in Clostridium groups IV and XIVa between the antibiotic +/- groups, as suggested by Fig S8?
+#### Are there differences in Clostridium groups IV and XIVa between the antibiotic +/- groups?
 
-Clostridium groups IV and XIVa are of interest in microbiome studies because they are butyrate producers, butyrate being one of the primary short chain fatty acids that may be mechanistically involved in some of the health consequences associated with microbiome composition. I'm including the _Faecalibacterium_ genus as [a member of cluster IV](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3635240/), though it is [not universally included](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3751348/), it appears.  
+Clostridium groups IV and XIVa are of interest in microbiome studies because they are butyrate producers, butyrate being one of the primary short chain fatty acids that may be mechanistically involved in some of the health consequences associated with microbiome composition. I'm including the _Faecalibacterium_ genus as [a member of cluster IV](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3635240/), though [it may not be universally included](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3751348/), it appears.  
 
-In the paper, they use the relative abundance at a single timepoint to test the difference. With splinectomeR, we can use all of the data across the entire time series to test whether antibiotic exposure status is associated with different levels of these butyrate producers.  
+In the paper, they use the relative abundance at a single timepoint to test the difference (Fig. S8). With splinectomeR, we can use all of the data across the entire time series to test whether antibiotic exposure status is associated with different levels of these butyrate producers.  
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
 
 ```{r filter and test clostridium clusters}
 # Define the Genera in these Clostridium clusters (that are present in this dataset)
@@ -488,21 +544,21 @@ clostrid_groups <- c(
 # Filter and merge
 otus_clostrid <- otus %>% filter(OTU_ID %in% clostrid_groups)
 clostrid_tax_metadata <- flip_split_merge(otus_clostrid, metadata)
-clostrid_tax_metadata$clostridSum <- 
+clostrid_tax_metadata$clostridiales_abundance <- 
   rowSums(x = clostrid_tax_metadata[, 13:ncol(clostrid_tax_metadata)])
 
 colnames(clostrid_tax_metadata)
-
 clostrid_result <- permuspliner(data = clostrid_tax_metadata,
-                                xvar = 'timepoint', yvar = 'clostridSum',
-                                perms = 999, category = 'antibiotics_y_n',
+                                xvar = 'timepoint', yvar = 'clostridiales_abundance',
+                                category = 'antibiotics_y_n',
                                 cases = 'baby_id', retain_perm = T)
 ```
 
-Noteably, this is a _stronger_ result than their test comparing relative abundance at 36 months. We can also look at the plot to see where the differences mostly lie.  
+Noteably, this is a _stronger_ result than when comparing relative abundance at 36 months, and provides even more support for their conclusions. We can also look at the plot to see where the differences mostly lie temporally.  
 
 ```{r plot the clostridium results}
-permuspliner.plot.permdistance(data = clostrid_result, xlabel = 'timepoint')
+permuspliner.plot.permsplines(clostrid_result, xvar = 'timepoint', yvar = 'clostridiales_abundance')
+permuspliner.plot.permdistance(clostrid_result, xlabel = 'timepoint')
 ```
 
 Interesting - they nearly converge where the authors were testing the difference (36 months). Looking across the time series gives a more complete answer, and in this case it is statistically more powerful as well.  
@@ -510,6 +566,11 @@ Side note: if you remove _Faecalibacterium_, the difference even slightly strong
 
 #### Does alpha diversity differ, or change differently, over time?
 First, calculate the Shannon diversity (using the `vegan` package) from the OTU table, and add the metadata. We don't have the raw counts, so we will just filter to a Genus table and calculate the Shannon diversity from that.  
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
+
 ```{r alpha diversity}
 otus_genus <- otus %>% filter(!grepl('s__', otus$OTU_ID) & grepl('g__', otus$OTU_ID))
 alphadiv <- as.data.frame(diversity(t(otus_genus[,2:ncol(otus_genus)]), 'shannon'))
@@ -522,7 +583,12 @@ alphadiv_meta <- merge(metadata, alphadiv, by = 'baby_id')
 ```
   
 Is alpha diversity different over time between antibiotic status or birth mode?  
-```{r test trends in alpha div}
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
+
+```{r test trends in alpha div, fig.height = 4, fig.width = 5.4}
 alpha_permresult_abx <- permuspliner(data = alphadiv_meta, xvar = 'timepoint',
                                  yvar = 'shannon', category = 'antibiotics_y_n',
                                  cases = 'baby_id', perms = 99, retain_perm = T)
@@ -542,6 +608,10 @@ p_mode
 It looks like alpha diversity is increasing in these babies, regardless their antibiotic exposure or birth mode, and that increase is fairly similar in rate and shape between these environmental factors.  
 We can also look more finely at the differences at each interval of time.  
 
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
+
 ```{r sliding splines on alpha div}
 alpha_slide <- sliding_spliner(data = alphadiv_meta, xvar = 'timepoint',
                                yvar = 'shannon', category = 'birth_mode',
@@ -551,6 +621,11 @@ sliding_spliner.plot.pvals(alpha_slide, xvar = 'timepoint')
   
 
 Another hypothesis surrounding babies in the first years of life is that their overall diversity should be increasing as they get older. We can confirm this with our tests, by asking whether alpha diversity is non-linear over time. We can also test this within the groups of antibiotic exposed and non-exposed babies.
+
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
+```
+
 ```{r alpha div trends}
 alpha_trendresult_all <- trendyspliner(data = alphadiv_meta, xvar = 'timepoint',
                                        yvar = 'shannon', cases = 'baby_id',
