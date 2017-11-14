@@ -25,7 +25,7 @@ the y component but shuffling the hypothesized trend.
 
 \item{perms}{The number of permutations to generate}
 
-\item{retain_perm}{Retain permuted spline data for permutation confidence interval plotting (default FALSE for speed)}
+\item{retain_perm}{Retain permuted spline data for permutation confidence interval plotting (set to FALSE for less memory)}
 
 \item{test_direction}{Test whether the groups are significantly 'more' or significantly 'less' distinct than expected by random chance. Default is 'more'.}
 

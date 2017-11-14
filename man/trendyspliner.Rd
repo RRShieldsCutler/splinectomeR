@@ -19,7 +19,7 @@ the y component but shuffling the hypothesized trend.
 
 \item{group}{If more than one group in the data, the group to compare.}
 
-\item{mean_center}{Before processing, mean center data by individual/case}
+\item{mean_center}{Before processing, mean center data by individual/case (default FALSE)}
 
 \item{perms}{The number of permutations to generate}
 
