@@ -19,7 +19,7 @@ There are two vignettes available for this package:
   
   
 #### Disclaimer
-Licensed under GPL-3. As such, the `splinectomer` package is freely offered, without any warrantee or guarantee. It may be used, redistributed, or modified for non-commercial purposes with appropriate citation of the original work. You, the user, are solely responsible for verifying the legitimacy of your results.  
+Licensed under the MIT License. As such, the `splinectomer` package is freely offered, without any warrantee or guarantee. It may be used, redistributed, or modified for non-commercial purposes with appropriate citation of the original work. You, the user, are solely responsible for verifying the legitimacy of your results.  
   
 ***
 #### References
