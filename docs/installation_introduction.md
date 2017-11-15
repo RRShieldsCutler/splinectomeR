@@ -103,8 +103,3 @@ This function uses the results object of the main test function to plot the tren
 ```R
 sliding_spliner.plot.pvals(result, cases = 'Chick')
 ```
-##### sliding_spliner.plot.splines
-Uses the results object to see what the spline smoothed data look like in comparing the two groups. You can specify the category, xvar, and yvar to display on the plots (defaults are 'category', 'xvar', and 'yvar').
-```R
-sliding_spliner.plot.splines(result, category = 'Diet', xvar = 'Time', yvar = 'weight')
-```

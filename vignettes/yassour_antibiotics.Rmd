@@ -276,12 +276,12 @@ unique(top20_family_meta$family)
 f_top20_abx_pvals <- list()
 for (f in unique(top20_family_meta$family)) {
   f__df <- top20_family_meta %>% filter(family == f)
-  print(f)
+  cat(f)
   f.result <- permuspliner(data = f__df, xvar = 'timepoint',
                        yvar = 'relative_abundance', perms = 99,
                        category = 'antibiotics_y_n', cases = 'baby_id',
                        cut_low = 6, quiet = T)
-  print(f.result$pval)
+  cat(f.result$pval)
   f_top20_abx_pvals <- append(f_top20_abx_pvals, f.result$pval)
 }
 f_top20_abx_qvals <- p.adjust(f_top20_abx_pvals, method = 'fdr')  # Adjusted p values
@@ -301,6 +301,7 @@ porph.result <- permuspliner(data = Porphyromonadaceae.top_family_meta,
                              yvar = 'relative_abundance',
                              category = 'antibiotics_y_n', cases = 'baby_id',
                              cut_low = 6, quiet = T, retain_perm = T)
+cat(porph.result$pval)
 permuspliner.plot.permsplines(data = porph.result,
                               xvar = 'timepoint',
                               yvar = 'relative_abundance')
@@ -327,12 +328,12 @@ set.seed(11)  # For reproducibility
 ```{r loop permutations on top20}
 for (f in unique(top20_family_meta$family)) {
   f__df <- top20_family_meta %>% filter(family == f)
-  print(f)
+  cat(f)
   f.result <- permuspliner(data = f__df, xvar = 'timepoint',
                        yvar = 'relative_abundance', perms = 99,
                        category = 'birth_mode', cases = 'baby_id',
                        cut_low = 6, quiet = T)
-  print(f.result$pval)
+  cat(f.result$pval)
 }
 
 ```
@@ -433,12 +434,9 @@ firm_vs_oides_result <- permuspliner(data = all_phyla_meta, xvar = 'timepoint',
                       perms = 999, category = 'phyla',
                       groups = 'k__Bacteria.p__Bacteroidetes,k__Bacteria.p__Firmicutes',
                       retain_perm = T)
-permuspliner.plot.permsplines(firm_vs_oides_result,
-                              xvar = 'timepoint',
-                              yvar = 'relative_abundance')
 ```
 
-*BEWARE!* These are relative abundances! So if studying two major phyla, when one goes down _in proportion_, the other expands _in proportion_. In most cases, one **should not** be comparing the relative abundance of two major bugs using the tool like this (it won't stop you, but neither will the edge of that cliff...). What we can do is either look at them individually (Do Bacteroidetes go up/down over time? Do Firmicutes?) or measure the ratio and then look at whether the change in the F:B ratio is non-zero over time. These questions can be answered using splinectomeR's `trendyspliner` test.  
+But remember, these are relative abundances... So if studying two major phyla, when one goes down _in proportion_, the other expands _in proportion_. What we can do is either look at them individually (Do Bacteroidetes go up/down over time? Do Firmicutes?) or measure the ratio and then look at whether the change in the F:B ratio is non-zero over time. These questions can be answered using splinectomeR's `trendyspliner` test.  
 
 ```{r include=FALSE}
 set.seed(11)  # For reproducibility
@@ -602,6 +600,9 @@ p_abx <- permuspliner.plot.permsplines(data = alpha_permresult_abx,
 p_mode <- permuspliner.plot.permsplines(data = alpha_permresult_mode,
                                    xvar = 'timepoint', yvar = 'shannon')
 p_abx
+```
+
+```{r plot trends in alpha div by mode, fig.height = 2.5, fig.width = 5.2}
 p_mode
 ```
 
