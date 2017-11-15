@@ -1,5 +1,7 @@
 # splinectomeR
 #### R package of spline-based statistical analysis tools for longitudinal data
+[![DOI](https://zenodo.org/badge/94937505.svg)](https://zenodo.org/badge/latestdoi/94937505)
+
 [Explore on the splinectomeR website](https://rrshieldscutler.github.io/splinectomeR/)
 ***
 These functions are designed to provide statistical analyses in _real_ longitudinal data, which may be missing timepoints, possess limited data at some timepoints, have noisy biological variability, and variable numbers of observations per individual being measured. Comparisons can be made between two groups or within a single group for a non-zero change over the independent axis; both return a p-value based on a randomly permuted distribution of the real data. There is also a function for measuring significant differences at intervals across the entire x series (e.g. time) by interpolating splines from the original data.
