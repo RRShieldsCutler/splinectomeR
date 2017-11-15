@@ -203,7 +203,7 @@ sliding_spliner.plot.pvals <- function(data, xvar = 'xvar') {
   ggplot(pval.p, aes(x=pval.p[,1], y=p_value)) + geom_line() +
     geom_point(shape = 20, size = (pval.p$N.norm * 2))  +
     geom_hline(aes(yintercept = 0.05), linetype='dashed') +
-    xlab(xvar) + ylab('Mann-Whitney p-value') +
+    xlab(xvar) + ylab('p-value (log)') +
     scale_y_continuous(trans = scales::log10_trans()) +
     theme_bw() + theme(legend.position='none',
                        plot.background = element_rect(color = 'white'),
