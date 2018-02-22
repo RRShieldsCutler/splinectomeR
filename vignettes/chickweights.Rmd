@@ -14,8 +14,8 @@ knitr::opts_chunk$set(fig.width = 5, fig.height = 4, fig.align = "center")
 ```
 
 
-## The ChickWeight Dataset  
-Below you will find a simple splinectomeR vignette based on the R dataset called `ChickWeight`.  
+## The ChickWeight Tutorial  
+Below you will find a simple splinectomeR tutorial/vignette based on the R dataset called `ChickWeight`.  
 First, make sure that you have the datasets package and the splinectomeR package.  
 ```{r load dependencies, message=FALSE, warning=FALSE}
 require(datasets)
@@ -29,21 +29,22 @@ This standard dataset works well because it is a simple longitudinal study of se
 1. Do the diets produce significantly different weight gain responses?
 1. Are there significant differences along the time course?
 1. Do all diets result in a non-zero weight gain (one would hope)?  
-Conveniently, the `ChickWeight` dataset is already in the ideal dataframe format for splinectomeR, where each row is an observation, and the diets, chick IDs, and weights are defined in individual columns.
+Conveniently, the `ChickWeight` dataset is already in the ideal dataframe format for splinectomeR, where each row is an observation, and the diets, chick IDs, and weights are defined in individual columns.  
+Check the names of the columns, since these will be used in the splinectomeR functions, using `colnames()`.
 ```{r, echo=FALSE}
 colnames(ChickWeight)
 ```
   
-So, in our tests, the `xvar` will be "Time", the `cases` will be the "Chick", the `yvar` will be "weight", and the `category` of interest is the "Diet".
+So, in our tests, the `xvar` will be "Time", the `cases` will be the "Chick", the `yvar` will be "weight", and the `category` of interest is the "Diet". These have to match exactly when entered into the functions below.
   
 ### Testing for differences between two diets
-To test for a difference between two diets, use the `permuspliner()` function.  
+To test for a difference between two diets, use the `permuspliner()` function with the variables highlighted above.  
 ```{r, error=TRUE, purl=FALSE}
 result <- permuspliner(data = ChickWeight, xvar = 'Time',
                        yvar = 'weight', cases = 'Chick', category = 'Diet')
 ```
   
-Oh no! The error is telling us there are more than two groups in the category we selected (Diet). If there are only two groups, the function will detect those. If there are more than two (even a single third entry), you must either filter your data or specify which groups with `groups = ...` as a comma-separated string.  
+Oh no! The error is telling us there are more than two groups in the category we selected (Diet). If there are only two groups, the function will detect those automatically; if there are more than two (even a single third entry), you must either subset your data frame or specify which groups you want to compare with the `groups = ...` as a comma-separated string.  
 
 ```{r}
 # Default permutations is 999, but we will set to 99 to speed up the code
@@ -80,7 +81,7 @@ permuspliner.plot.permsplines(data = permu_result, xvar = 'Time', yvar = 'weight
 
 ### Sliding spline test
 Let's say you are really interested in that diet 1 vs 2 comparison, even though it wasn't statistically significant overall. Perhaps there is a point in time where the weights are actually different, but it gets washed out over the whole timeseries.  
-To test this, you can use the `slidingspliner()` function. The result is a table of p-values, and is most useful when you use the built-in plotting function powered by `ggplot2`.
+To test this, you can use the `slidingspliner()` function. The result is a table of p-values, and can be quickly visualized using the built-in plotting function powered by `ggplot2`.
 
 ```{r}
 result <- sliding_spliner(data = ChickWeight, xvar = 'Time', yvar = 'weight',

@@ -68,7 +68,8 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
     in_df <- in_df[in_df[, cases] %in% keep_ids, ]
   }
   if (quiet == FALSE) {
-    cat(paste('\nTesting between', v1, 'and', v2, 'for a difference in', yvar, '\n'))
+    cat(paste('\nGroups detected:', v1, 'and', v2, '.\n'))
+    cat(paste('\nNow testing between variables', v1, 'and', v2, 'for a difference in the response labeled', yvar, '\n'))
     cat(paste('\nScalpel please: performing permusplinectomy with', perms, 'permutations...\n'))
   }
   
@@ -98,7 +99,9 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
   real_spl_dist <- merge(v1_spl_f, v2_spl_f, by = 'x')
   real_spl_dist$abs.distance <- abs(real_spl_dist$var1 - real_spl_dist$var2)  # Measure the real group distance
   real_area <- sum(real_spl_dist$abs.distance) / ints  # Calculate the area between the groups
-  
+  if (quiet == FALSE) {
+    cat(paste('\nArea between groups successfully calculated, now spinning up permutations...\n'))
+  }
   # Define the permutation function
   case_shuff <- 'case_shuff'  # Dummy label
   .spline_permute <- function(randy) {
@@ -157,16 +160,20 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
     for (ix in 1:perms) {
       perm_output <- .spline_permute(randy = in_rand)
     }
+    if (quiet == FALSE) {
+      cat(paste('...permutations completed...\n'))
+    }
     if (test_direction == 'more') {
       pval <- (sum(perm_output$permuted >= as.numeric(real_area)) + 1) / (perms + 1)
     } else if (test_direction == 'less') {
       pval <- (sum(perm_output$permuted <= as.numeric(real_area)) + 1) / (perms + 1)
     }
-    # perm_output <- replicate(perms, 
-    #                       .spline_permute(randy = in_rand))
   } else if (retain_perm == FALSE) {
     permuted <- replicate(perms, 
                        .spline_permute(randy = in_rand))
+    if (quiet == FALSE) {
+      cat(paste('...permutations completed...\n'))
+    }
     if (test_direction == 'more') {
       pval <- (sum(permuted >= as.numeric(real_area)) + 1) / (perms + 1)
     } else if (test_direction == 'less') {
@@ -198,7 +205,16 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
                    "v1_data" = v1_data, "v2_data" = v2_data)
   }
   return(result)
+  if (quiet == FALSE) {
+    cat(paste('\nTo plot the results, try the following command:'))
+    cat(paste0('\npermuspliner.plot.permdistance(result, xvar=', xvar,')'))
+    if (retain_perm == TRUE) {
+      cat(paste0('\npermuspliner.plot.permsplines(result, xvar=', xvar, ', yvar=', yvar, ')'))
+    }
+  }
 }
+
+
 
 #' @title Plot permuted distance distribution
 #' @description Compare the permuted distances to the true distance. Requires permuspliner run with the "retain_perm" option.
@@ -311,9 +327,5 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
     xlab(xvar) + ylab(yvar)
   return(p)
 }
-
-
-
-
 
 
