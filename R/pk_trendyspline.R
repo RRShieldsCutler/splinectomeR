@@ -81,7 +81,7 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   # Mean center the data if called for to remove bias from divergent starting points
   if (mean_center == TRUE) {
     if (quiet == FALSE) {
-      cat(paste('\nMean centering the data...\n'))
+      cat(paste('\nOk, mean centering the data first...'))
     }
     all_ids <- as.character(unique(df[, cases]))
     grp_mean <- mean(df[, yvar])
@@ -101,6 +101,9 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
       i = i + 1
     }
     df <- do.call(rbind, df_adj)
+    if (quiet == FALSE) {
+      cat(paste(' mean centering complete!\n'))
+    }
   }
   
   # Fit the spline
@@ -120,7 +123,10 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   spl.fit$y_base <- y_base
   spl.fit$distance <- (spl.fit$var1 - spl.fit$y_base)  # Distance from spline to baseline - the nonzero magnitude
   real.area <- sum(spl.fit$distance) / ints  # Calculate the area between the baseline and spline
-  
+  if (quiet == FALSE) {
+    cat(paste('Calculations completed on observed data.\n
+              Now preparing the', perms, 'permutations - this may take some time...\n'))
+  }
   # Define the permutation function
   y_shuff <- 'y_shuff'  # Dummy label
   .spline_permute <- function(randy) {
@@ -154,6 +160,9 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   perm_retainer <- data.frame()
   for (ix in 1:perms) {
     perm_output <- .spline_permute(randy = df)
+  }
+  if (quiet == FALSE) {
+    cat(paste('Permutations completed successfully!\n'))
   }
   pval <- (sum(lapply(perm_output$permuted, abs) >= abs(real.area)) + 1) / (perms + 1)
   

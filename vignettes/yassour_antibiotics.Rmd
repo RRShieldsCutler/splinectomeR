@@ -217,7 +217,7 @@ set.seed(11)  # For reproducibility
 slide_result <- sliding_spliner(data = f__Bacteroidaceae.top_family_meta,
                                 xvar = 'timepoint', yvar = 'relative_abundance',
                                 category = 'antibiotics_y_n', cases = 'baby_id',
-                                test_density = 10, cut_sparse = 7,
+                                test_density = 10, cut_low = 7,
                                 set_spar = 0.5)
 sliding_spliner.plot.pvals(data = slide_result, xvar = 'timepoint')
 ```
@@ -356,7 +356,7 @@ slideplots <- function(xx) {
   f.result <- sliding_spliner(data = f__df, xvar = 'timepoint',
                               yvar = 'relative_abundance', category = 'birth_mode',
                               cases = 'baby_id', test_density = 3,
-                              cut_sparse = 7, set_spar = 0.5)
+                              cut_low = 7, set_spar = 0.5)
   sliding_spliner.plot.pvals(f.result, xvar = 'timepoint')
   }
 lapply(birthmode_families, FUN = slideplots)
@@ -508,7 +508,7 @@ head(bacteroides_genus_meta)
 bifido_slider <- sliding_spliner(data = bifidobacterium_genus_meta,
                                  xvar = 'timepoint', yvar = 'relative_abundance',
                                  category = 'feeding_in_hospital',
-                                 cases = 'baby_id', test_density = 10, cut_sparse = 7,
+                                 cases = 'baby_id', test_density = 10, cut_low = 7,
                                  set_spar = 0.5, groups = 'OnlyBreastmilk,mixed')
 sliding_spliner.plot.pvals(bifido_slider, xvar = 'timepoint')
 ```

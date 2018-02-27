@@ -18,7 +18,7 @@
 #' @param cases The column name defining the individual cases, e.g. patients.
 #' @param groups If more than two groups, the two groups to compare.
 #' @param set_spar Set the spar parameter for splines
-#' @param cut_sparse Remove sparse cases with fewer than __ data points (default 4)
+#' @param cut_low Remove low prevalence with fewer than __ data points (default 4)
 #' @param test_density Minimum density of cases in each group to report p-value (default 3)
 #' @param ints Number of x intervals over which to measure significance
 #' @param quiet Silence all text outputs
@@ -32,7 +32,7 @@
 
 sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
                             cases = NA, groups = NA, set_spar = NULL,
-                            cut_sparse = 4, test_density = 3, ints = 100, quiet = FALSE) {
+                            cut_low = 4, test_density = 3, ints = 100, quiet = FALSE) {
   
   require(reshape2)
   
@@ -77,9 +77,14 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   cat.vars <- c(v1,v2)
   df <- df[df[, category] %in% cat.vars, ]
   cases.tab <- data.frame(table(df[, cases]))
-  cases.notsparse <- cases.tab[cases.tab$Freq >= cut_sparse, ]
-  cases.keep <- as.character(cases.notsparse$Var1)
+  cases.notlow <- cases.tab[cases.tab$Freq >= cut_low, ]  # And remove rare cases
+  cases.keep <- as.character(cases.notlow$Var1)
   df <- df[df[, cases] %in% cases.keep, ]
+  
+  if (quiet == FALSE) {
+    cat(paste('\nGroups detected:', v1, 'and', v2, '.\n'))
+    cat(paste('\nData organization successfull;\n...now testing for significant differences in the response labeled', yvar, '\n'))
+  }
   
   # Get the range of the independent variable (e.g. time) to set spline limits
   x.min <- min(as.numeric(df[, xvar]))
@@ -101,6 +106,10 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
     unit.spl.f <- data.frame(predict(unit.spl, xrang.i))
     colnames(unit.spl.f) <- c('x', i)
     spl.table <- merge(spl.table, unit.spl.f, by = 'x', all = T)
+  }
+  
+  if (quiet == FALSE) {
+    cat(paste('Splines successfully generated for each case; now testing for significance over', ints, 'intervals\n'))
   }
   
   # Prepare the spline table for statistical testing
@@ -134,22 +143,27 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   pval.x <- list()
   pval.num.pts <- list()  # Save the number of total data points in each comparison
   for (n in xrang) {
-    pval <- mann_whitney_per_bit(spline.table = spl.table.p, n)
-    pvals.list <- append(pvals.list, pval[1])
+    pval <- mann_whitney_per_bit(spline.table = spl.table.p, n)  # Run the test across the spline
+    pvals.list <- append(pvals.list, pval[1])  # Assemble the list of pvalues
     pval.x <- append(pval.x, pval[2])
-    pval.num.pts <- append(pval.num.pts, pval[3])
+    pval.num.pts <- append(pval.num.pts, pval[3])  # Track the n for each test
   }
+  
+  if (quiet == FALSE) {
+    cat(paste('Testing completed, just organizing the results a bit...\n'))
+  }
+  # Organize the results object
   pval.df <- do.call(rbind, Map(data.frame,
                                x.series=as.numeric(pval.x),
                                p.value=as.numeric(pvals.list),
                                N=as.numeric(pval.num.pts)))
   colnames(pval.df) <- c(xvar, 'p_value', 'number_of_observations')
-  
   plot.spline.data <- melt(data = spl.table, id.vars = 'x')
   colnames(plot.spline.data) <- c('x', cases, 'value')
   plot.spline.data <- merge(plot.spline.data, df.groups, by = cases, all = T)
   colnames(plot.spline.data) <- c('UNIT', 'x', 'value', 'category')
   
+  # Assemble the final results object
   result <- list('pval_table' = pval.df, 'spline_table' = spl.table,
                  'spline_longform' = plot.spline.data)
   return(result)
