@@ -220,6 +220,9 @@ sliding_spliner.plot.pvals <- function(data, xvar = 'xvar') {
   pval.p <- data['pval_table'][[1]]
   xvar <- names(pval.p)[1]
   pval.p$N.norm <- .norm_range(x = pval.p[,3])
+  if (length(unique(pval.p[,3])) <= 1) {
+    cat('Number of observations per interval is uniform; points will not be plotted.')
+  }
   ggplot(pval.p, aes(x=pval.p[,1], y=p_value)) + geom_line() +
     geom_point(shape = 20, size = (pval.p$N.norm * 2))  +
     geom_hline(aes(yintercept = 0.05), linetype='dashed') +

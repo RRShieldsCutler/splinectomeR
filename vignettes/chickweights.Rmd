@@ -113,7 +113,7 @@ diet_4_trend <- trendyspliner(data = ChickWeight, xvar = 'Time', yvar = 'weight'
 trendyspliner.plot.perms(diet_4_trend, xlabel = 'time', ylabel = 'weight')
 ```
   
-You could also quickly run through all four diet variables:  
+You could also quickly run through all four diet variables using some other R tricks:  
 ```{r}
 diets <- c('1','2','3','4')
 diet_results <- lapply(X = diets,
