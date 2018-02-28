@@ -21,7 +21,7 @@ the y component but shuffling the hypothesized trend.
 
 \item{cases}{The column name defining the individual cases, e.g. patients.}
 
-\item{groups}{If more than two groups, the two groups to compare.}
+\item{groups}{If more than two groups, the two groups to compare as character vector.}
 
 \item{perms}{The number of permutations to generate}
 
@@ -47,6 +47,6 @@ Tests for a significant difference between two groups overall.
 \examples{
 result <- permuspliner(data = ChickWeight, xvar = 'Time',
              yvar = 'weight', category = 'Diet',
-             cases = 'Chick', groups = '1,2')
+             cases = 'Chick', groups = c(1,2))
 result$pval
 }

@@ -13,11 +13,11 @@ Test usage
 
 \item{cases}{The column name defining the individual cases, e.g. patients.}
 
-\item{groups}{If more than two groups, the two groups to compare.}
+\item{groups}{If more than two groups, the two groups to compare as character vector.}
 
 \item{set_spar}{Set the spar parameter for splines}
 
-\item{cut_sparse}{Remove sparse cases with fewer than __ data points (default 4)}
+\item{cut_low}{Remove low prevalence with fewer than __ data points (default 4)}
 
 \item{test_density}{Minimum density of cases in each group to report p-value (default 3)}
 
@@ -43,7 +43,7 @@ it assumes the entire dataset is the single population.
 \examples{
 result <- trendyspliner(data = ChickWeight, xvar = 'Time',
              yvar = 'weight', category = 'Diet',
-             cases = 'Chick', groups = '1,2')
+             cases = 'Chick', groups = c(1,2))
 result$pval
 
 }
