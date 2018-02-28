@@ -169,7 +169,7 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
                  'spline_longform' = plot.spline.data)
   if (quiet == FALSE) {
     resname <- deparse(substitute(result))
-    cat(paste('\nTo visualize your results, try the following commands, where "data" is your results object:'))
+    cat(paste('\nDone! To visualize your results, try the following commands, where "data" is your results object:'))
     cat(paste0('\nsliding_spliner.plot.splines(data, xvar="', xvar, '", yvar="', yvar, '", category="', category, '")'))
     cat(paste0('\nor\nsliding_spliner.plot.pvals(data, xvar="', xvar,'")'))
   }

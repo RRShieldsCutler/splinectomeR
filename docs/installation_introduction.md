@@ -27,11 +27,11 @@ This function tests for a greater-than-chance difference between two groups of i
 An example using the `ChickWeight` dataset from the `datasets` package:
 ```R
 > # Test for difference in weight change over time between Diet groups 1 and 2
-> result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', cases = 'Chick', category = 'Diet', groups = '1,2')
+> result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', cases = 'Chick', category = 'Diet', groups = c('1','2'))
 > result$pval
 [1] 0.003
 > # Test for difference in weight change over time between Diet groups 2 and 3
-> result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', cases = 'Chick', category = 'Diet', groups = '2,3')
+> result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', cases = 'Chick', category = 'Diet', groups = c('2','3'))
 > result$pval
 [1] 0.159
 ```
@@ -86,7 +86,7 @@ The objective of this function is to reveal whether two groups differ significan
 If the dataframe contains more than two groups/populations, you can automatically subset to those groups by defining the `groups` of interest, as a string, as in the example below.
 ```R
 > # Test for significant differences in Chicks between Diets 1 and 2 at 100 Time intervals
-> result <- sliding_spliner(data = ChickWeight, xvar = 'Time', yvar = 'weight', category = 'Diet', groups = '1,2', cases = 'Chick', ints = 100)
+> result <- sliding_spliner(data = ChickWeight, xvar = 'Time', yvar = 'weight', category = 'Diet', groups = c('1','2'), cases = 'Chick', ints = 100)
 > str(result)
 List of 3  # Result edited for clarity!
  $ pval_table     :'data.frame':	100 obs. of  3 variables:

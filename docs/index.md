@@ -9,7 +9,7 @@ Happy splining, and have a _splinedid_ day!
   
 #### Vignettes
 There are two vignettes available for this package:
-1. [Chick Weights](chickweights_web.html) - a simple exploration using the R dataset `ChickWeight`.
+1. [Chick Weights](chickweights_web.html) - a simple exploration and `splinectomeR` tutorial using the R dataset `ChickWeight`.
 1. [Yassour et al. Antibiotics](yassour_antibiotics_web.html) - a more intensive application of the `splinectomeR` package to a large set of longitudinal microbiome data published by Yassour et al.[^1] following 38 babies over three years.
   
 ***  

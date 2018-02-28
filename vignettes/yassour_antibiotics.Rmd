@@ -307,9 +307,9 @@ permuspliner.plot.permsplines(data = porph.result,
                               yvar = 'relative_abundance')
 ```
   
-We can see from this plot that this taxon is becoming more discriminating between the groups over time. The translucent lines depict the permuted splines, which serves as a visual for how distinct the two groups are relative to random assortment. So, at the beginning, while the group splines are distinct, the permuted data covers a wide range above and below the true data; this suggests that there is considerable noise and the difference is not strong here. In contrast, as time going on the two lines move farther apart and the permuted lines lay almost entirely between the real data; this indicates that the difference between these groups is stronger than you would see by random chance.  
+We can see from this plot that this taxon is becoming more discriminating between the groups over time. The translucent lines depict the permuted splines, which serves as a visual for how distinct the two groups are relative to random assortment. So, at the beginning, while the group splines are distinct, the permuted data covers a wide range above and below the observed data; this suggests that there is considerable noise and the difference is not strong here. In contrast, as time going on the two lines move farther apart and the permuted lines lay almost entirely between the real data; this indicates that the difference between these groups is stronger than you would see by random chance.  
 
-The second plotting function shows the distances between the two groups (N and Y antibiotics, here), directly visualizing the relationship between the true difference and the random distribution of differences. So, a significant result here should show the bulk of permutation distances lying below the real data.  
+The second plotting function shows the distances between the two groups (N and Y antibiotics, here), directly visualizing the relationship between the observed difference and the random distribution of differences. So, a significant result here should show the bulk of permutation distances lying below the real data.  
 
 ```{r distance plot for porphyromonadaceae}
 permuspliner.plot.permdistance(porph.result, xlabel = 'timepoint')
@@ -317,7 +317,7 @@ permuspliner.plot.permdistance(porph.result, xlabel = 'timepoint')
 
 
 
-This confirms what we would expect from the previous plot, showing that our confidence of the group difference is higher once the infants pass the first year of life, and continues to become more striking through the end of the time series, where there are very few permuted lines above the true distance.  
+This confirms what we would expect from the previous plot, showing that our confidence of the group difference is higher once the infants pass the first year of life, and continues to become more striking through the end of the time series, where there are very few permuted lines above the observed distance.  
 
 Let's look at birth mode the same way.
 
@@ -655,7 +655,7 @@ Yassour et al. present a monumental dataset with dense longitudinal data that de
   
 A remaining challenge in analyses like these is a lack of clear, simple methods to directly compare data across multiple individuals and many time points--in particular when those time points are not in sync--without averaging or adding across multiple points, or subsetting and dropping many of the data points. In both cases, the longitudinal density is not being leveraged to its full possible extent.  
   
-In this vignette, we've shown how these `splinectomeR` tools can quickly assess statistical significance by summarizing group data with splines and generating randomly permuted distributions to evaluate the probability that the true magnitude of difference is due to chance. By employing the three test functions, we can explore overall changes in abundances or metrics, and compare longitudinal trends between two categorical groups.  
+In this vignette, we've shown how these `splinectomeR` tools can quickly assess statistical significance by summarizing group data with splines and generating randomly permuted distributions to evaluate the probability that the observed magnitude of difference is due to chance. By employing the three test functions, we can explore overall changes in abundances or metrics, and compare longitudinal trends between two categorical groups.  
   
 The approaches here provide statistical support for proposals the authors have drawn, and allow us to test supplemental hypotheses. Importantly, we are able to perform these tests in a way that takes full advantage of the longitudinal data and maintains the individual observations.
 

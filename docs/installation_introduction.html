@@ -141,11 +141,11 @@ $(document).ready(function () {
 </ul>
 <p>An example using the <code>ChickWeight</code> dataset from the <code>datasets</code> package:</p>
 <pre class="r"><code>&gt; # Test for difference in weight change over time between Diet groups 1 and 2
-&gt; result &lt;- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', cases = 'Chick', category = 'Diet', groups = '1,2')
+&gt; result &lt;- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', cases = 'Chick', category = 'Diet', groups = c('1','2'))
 &gt; result$pval
 [1] 0.003
 &gt; # Test for difference in weight change over time between Diet groups 2 and 3
-&gt; result &lt;- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', cases = 'Chick', category = 'Diet', groups = '2,3')
+&gt; result &lt;- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', cases = 'Chick', category = 'Diet', groups = c('2','3'))
 &gt; result$pval
 [1] 0.159</code></pre>
 <div id="permuspliner-plotting-functions" class="section level5">
@@ -193,7 +193,7 @@ permuspliner.plot.permsplines(result, xvar = 'Time', yvar = 'weight')</code></pr
 </ul>
 <p>If the dataframe contains more than two groups/populations, you can automatically subset to those groups by defining the <code>groups</code> of interest, as a string, as in the example below.</p>
 <pre class="r"><code>&gt; # Test for significant differences in Chicks between Diets 1 and 2 at 100 Time intervals
-&gt; result &lt;- sliding_spliner(data = ChickWeight, xvar = 'Time', yvar = 'weight', category = 'Diet', groups = '1,2', cases = 'Chick', ints = 100)
+&gt; result &lt;- sliding_spliner(data = ChickWeight, xvar = 'Time', yvar = 'weight', category = 'Diet', groups = c('1','2'), cases = 'Chick', ints = 100)
 &gt; str(result)
 List of 3  # Result edited for clarity!
  $ pval_table     :'data.frame':    100 obs. of  3 variables:

@@ -14,8 +14,8 @@ knitr::opts_chunk$set(fig.width = 5, fig.height = 4, fig.align = "center")
 ```
 
 
-## The ChickWeight Tutorial  
-Below you will find a simple splinectomeR tutorial/vignette based on the R dataset called `ChickWeight`.  
+## The ChickWeight Tutorial Vignette  
+Below you will find a simple splinectomeR tutorial/vignette based on the R dataset called `ChickWeight`. The purpose is to introduce new users to the package with a base R dataset, so anyone call follow along with their own R installation.  
 First, make sure that you have the datasets package and the splinectomeR package.  
 ```{r load dependencies, message=FALSE, warning=FALSE}
 require(datasets)
@@ -25,7 +25,8 @@ require(splinectomeR)
 head(ChickWeight)  # Check out the structure of the ChickWeight data
 ```
   
-This standard dataset works well because it is a simple longitudinal study of several diets and their impact on chick body weights. With the `splinectomeR` package, we can test the following hypotheses:
+If you do not yet have splinectomeR installed, [visit the GitHub page](https://github.com/RRShieldsCutler/splinectomeR) for installation options.  
+The ChickWeight dataset works well because it is a simple longitudinal study of several diets and their impact on chick body weights. With the `splinectomeR` package, we can test the following hypotheses:
 1. Do the diets produce significantly different weight gain responses?
 1. Are there significant differences along the time course?
 1. Do all diets result in a non-zero weight gain (one would hope)?  
@@ -44,7 +45,7 @@ result <- permuspliner(data = ChickWeight, xvar = 'Time',
                        yvar = 'weight', cases = 'Chick', category = 'Diet')
 ```
   
-Oh no! The error is telling us there are more than two groups in the category we selected (Diet). If there are only two groups, the function will detect those automatically; if there are more than two (even a single third entry), you must either subset your data frame or specify which groups you want to compare with the `groups = ...` as a character vector (it will coerce this vector to character regardless). So here, `c('2','3')` will be treated equivalently as `c(2,3)`.  
+Oh no! The error is telling us there are more than two groups in the category we selected (Diet). If there are only two groups, the function will detect those automatically; if there are more than two (even a single third entry), you must either subset your data frame or specify which groups you want to compare with the `groups = ...` as a character vector (it will coerce this vector to character regardless, so here, `c('2','3')` could also be written `c(2,3)`).  
 
 ```{r}
 # Default permutations is 999, but we will set to 99 to speed up the code
@@ -113,7 +114,7 @@ diet_4_trend <- trendyspliner(data = ChickWeight, xvar = 'Time', yvar = 'weight'
 trendyspliner.plot.perms(diet_4_trend, xlabel = 'time', ylabel = 'weight')
 ```
   
-You could also quickly run through all four diet variables using some other R tricks:  
+You could also quickly run through all four diet variables using some other R tricks (using `lapply()` here). We expect each of these diet conditions to have a positive weight trend, since in all cases the chicks are gaining weight:  
 ```{r}
 diets <- c('1','2','3','4')
 diet_results <- lapply(X = diets,
@@ -122,8 +123,9 @@ diet_results <- lapply(X = diets,
                                                       cases = 'Chick', category = 'Diet',
                                                       perms = 99, mean_center = F))
 ```
-
-
+  
+And indeed, that is what we see!
+----
 A couple notes and tips about this test:
 * This test is area-based so it is reasonalby tolerant to non-linear non-zero trends
 * In some data, the individual cases may have a range of starting points that could confound this trend. For example, measuring changes in many patients' blood glucose over time: some patients will start out higher than others, but it's the group trend (up or down vs linear/no change) that is of interest. In these situations you can mean-center the cases prior to analysis with the `mean_center = TRUE` argument.
