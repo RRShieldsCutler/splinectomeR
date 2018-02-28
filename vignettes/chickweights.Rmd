@@ -44,13 +44,13 @@ result <- permuspliner(data = ChickWeight, xvar = 'Time',
                        yvar = 'weight', cases = 'Chick', category = 'Diet')
 ```
   
-Oh no! The error is telling us there are more than two groups in the category we selected (Diet). If there are only two groups, the function will detect those automatically; if there are more than two (even a single third entry), you must either subset your data frame or specify which groups you want to compare with the `groups = ...` as a comma-separated string.  
+Oh no! The error is telling us there are more than two groups in the category we selected (Diet). If there are only two groups, the function will detect those automatically; if there are more than two (even a single third entry), you must either subset your data frame or specify which groups you want to compare with the `groups = ...` as a character vector (it will coerce this vector to character regardless). So here, `c('2','3')` will be treated equivalently as `c(2,3)`.  
 
 ```{r}
 # Default permutations is 999, but we will set to 99 to speed up the code
 permu_result <- permuspliner(data = ChickWeight, xvar = 'Time', yvar = 'weight',
                              cases = 'Chick', category = 'Diet',
-                             groups = '2,3', perms = 99)
+                             groups = c('2','3'), perms = 99)
 # If you were to enter the 1,2 without quotes, it would return an error
 # since it interprets groups as character strings not numbers.
 ```
@@ -59,7 +59,7 @@ So in this case, there is not a signficant difference between the weight changes
 ```{r}
 permu_result <- permuspliner(data = ChickWeight, xvar = 'Time', yvar = 'weight',
                              cases = 'Chick', category = 'Diet',
-                             groups = '1,4', perms = 99)
+                             groups = c('1','4'), perms = 99)
 ```
   
 In this example, the number of permutations was set to 99 for speed, but for a more sensitive p-value, set `perms = 999` (the default) or more.  
@@ -70,7 +70,7 @@ The default result contains the reported p-value, the interpolated splines (as (
 ```{r}
 permu_result <- permuspliner(data = ChickWeight, xvar = 'Time', yvar = 'weight',
                              cases = 'Chick', category = 'Diet',
-                             groups = '1,4', perms = 999, retain_perm = T, ints = 100)
+                             groups = c('1','4'), perms = 999, retain_perm = T, ints = 100)
 
 # Plot the real distance between the groups on top of all the permuted distances.
 # Shows how far from the random distribution the real data lies across the time series
@@ -85,7 +85,7 @@ To test this, you can use the `slidingspliner()` function. The result is a table
 
 ```{r}
 result <- sliding_spliner(data = ChickWeight, xvar = 'Time', yvar = 'weight',
-                          cases = 'Chick', category = 'Diet', groups = '1,2')
+                          cases = 'Chick', category = 'Diet', groups = c('1','2'))
 sliding_spliner.plot.pvals(result, xvar = 'Time')
 ```
   
@@ -93,7 +93,7 @@ The defaul is 100 intervals, but if you have a very long or short timeseries, yo
 
 ```{r}
 result <- sliding_spliner(data = ChickWeight, xvar = 'Time', yvar = 'weight',
-                          cases = 'Chick', category = 'Diet', groups = '1,2', ints = 5)
+                          cases = 'Chick', category = 'Diet', groups = c('1','2'), ints = 5)
 sliding_spliner.plot.pvals(result, xvar = 'Time')
 ```
   

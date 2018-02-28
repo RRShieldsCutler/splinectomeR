@@ -173,6 +173,11 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   result <- list("pval" = pval, "imputed_curve" = spl.fit[, c(1,2,4)], "group_spline" = df.spl,
                  "permuted_splines" = perm_output$perm_retainer)
   return(result)
+  if (quiet == FALSE) {
+    cat(paste('\nTo visualize your results, try the following command:'))
+    cat(paste0('\ntrendyspliner.plot.perms(data =', deparse(substitute(result)),
+               ', xlabel="', xvar, '", ylabel="', yvar, '")'))
+  }
 }
 
 

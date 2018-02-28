@@ -16,7 +16,7 @@
 #' @param y The dependent variable; is continuous, e.g. temperature.
 #' @param category The column name of the category to be tested, if present.
 #' @param cases The column name defining the individual cases, e.g. patients.
-#' @param groups If more than two groups, the two groups to compare.
+#' @param groups If more than two groups, the two groups to compare as character vector.
 #' @param set_spar Set the spar parameter for splines
 #' @param cut_low Remove low prevalence with fewer than __ data points (default 4)
 #' @param test_density Minimum density of cases in each group to report p-value (default 3)
@@ -26,7 +26,7 @@
 #' @examples 
 #' result <- trendyspliner(data = ChickWeight, xvar = 'Time',
 #'              yvar = 'weight', category = 'Diet',
-#'              cases = 'Chick', groups = '1,2')
+#'              cases = 'Chick', groups = c(1,2))
 #' result$pval
 #' 
 
@@ -45,6 +45,7 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
     cat(paste('Running sliding spline test with', ints,
             'time points extrapolated from splines...\n'))
   }
+  # FOR DEBUG
   # Read infile and limit to ids matching sparsity parameter
   # df = read.delim(file = infile, header = 1, check.names = F, sep = '\t')
   # df = ChickWeight
@@ -69,8 +70,8 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
     v2 <- as.character(unique(df[, category])[2])
   } else {
     groups <- as.character(groups)
-    v1 <- strsplit(groups, ',')[[1]][1]
-    v2 <- strsplit(groups, ',')[[1]][2]
+    v1 <- groups[1]
+    v2 <- groups[2]
   }
   
   # Make sure the df only contains data from categories tested
@@ -167,6 +168,11 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   result <- list('pval_table' = pval.df, 'spline_table' = spl.table,
                  'spline_longform' = plot.spline.data)
   return(result)
+  if (quiet == FALSE) {
+    cat(paste('\nTo visualize your results, try the following command:'))
+    cat(paste0('\nsliding_spliner.plot.splines(data=', deparse(substitute(result)),
+               ', xvar="', xvar, '", yvar="', yvar, '", category="', category, '")'))
+  }
 }
 
 #' @title Plot group splines

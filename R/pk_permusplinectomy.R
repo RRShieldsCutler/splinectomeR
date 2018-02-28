@@ -11,7 +11,7 @@
 #' @param yvar The dependent variable; is continuous, e.g. temperature.
 #' @param category The column name of the category to be tested.
 #' @param cases The column name defining the individual cases, e.g. patients.
-#' @param groups If more than two groups, the two groups to compare.
+#' @param groups If more than two groups, the two groups to compare as character vector.
 #' @param perms The number of permutations to generate
 #' @param retain_perm Retain permuted spline data for permutation confidence interval plotting (set to FALSE for less memory)
 #' @param test_direction Test whether the groups are significantly 'more' or significantly 'less' distinct than expected by random chance. Default is 'more'.
@@ -25,7 +25,7 @@
 #' @examples 
 #' result <- permuspliner(data = ChickWeight, xvar = 'Time',
 #'              yvar = 'weight', category = 'Diet',
-#'              cases = 'Chick', groups = '1,2')
+#'              cases = 'Chick', groups = c(1,2))
 #' result$pval
 
 
@@ -57,8 +57,8 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
     v1 <- as.character(unique(in_df[, category])[1])
     v2 <- as.character(unique(in_df[, category])[2])
   } else {
-    v1 <- as.character(strsplit(groups, ',')[[1]][1])
-    v2 <- as.character(strsplit(groups, ',')[[1]][2])
+    v1 <- as.character(groups[1])
+    v2 <- as.character(groups[2])
   }
   # Trim data if some cases have too few observations
   if (!is.na(cut_low)) {
@@ -78,6 +78,11 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
   df_v2 <- in_df[in_df[, category] %in% c(v2) & !is.na(in_df[, xvar]), ]
   if (length(df_v1[, xvar]) < cut_sparse | length(df_v2[, xvar]) < cut_sparse) {
     stop('Not enough data in each group to fit spline')
+  }
+  # Prevent issues arising from identical case labels across groups
+  if (length(intersect(df_v1[, cases], df_v2[, cases])) > 0) {
+    stop('\nIt appears there may be identically labeled cases in both groups.\n
+         ...Please ensure that the cases are uniquely labeled between the two groups\n')
   }
   # Fit the splines for each group
   df_v1_spl <- with(df_v1,
@@ -206,10 +211,10 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
   }
   return(result)
   if (quiet == FALSE) {
-    cat(paste('\nTo plot the results, try the following command:'))
-    cat(paste0('\npermuspliner.plot.permdistance(result, xvar=', xvar,')'))
+    cat(paste('\nTo visualize your results, try the following command:'))
+    cat(paste0('\npermuspliner.plot.permdistance(', deparse(substitute(result)), ', xvar="', xvar,'")'))
     if (retain_perm == TRUE) {
-      cat(paste0('\npermuspliner.plot.permsplines(result, xvar=', xvar, ', yvar=', yvar, ')'))
+      cat(paste0('or\npermuspliner.plot.permsplines(data =', deparse(substitute(result)), ', xvar="', xvar, '", yvar="', yvar, '")'))
     }
   }
 }
@@ -287,7 +292,7 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
     stop('Missing required arugments.')
   }
   if (is.null(data['permuted_splines'][[1]])) {
-    stop('Permuted data not in results. Did you set "retain_perms = TRUE" ?')
+    stop('Permuted data not in results. Did you set "retain_perms = TRUE" in the permuspliner() run?')
   }
   require(ggplot2)
   require(reshape2)

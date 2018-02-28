@@ -432,7 +432,7 @@ head(all_phyla_meta$baby_id_phylum)
 firm_vs_oides_result <- permuspliner(data = all_phyla_meta, xvar = 'timepoint',
                       yvar = 'relative_abundance', cases = 'baby_id_phylum',
                       perms = 999, category = 'phyla',
-                      groups = 'k__Bacteria.p__Bacteroidetes,k__Bacteria.p__Firmicutes',
+                      groups = c('k__Bacteria.p__Bacteroidetes','k__Bacteria.p__Firmicutes'),
                       retain_perm = T)
 ```
 
@@ -509,7 +509,7 @@ bifido_slider <- sliding_spliner(data = bifidobacterium_genus_meta,
                                  xvar = 'timepoint', yvar = 'relative_abundance',
                                  category = 'feeding_in_hospital',
                                  cases = 'baby_id', test_density = 10, cut_low = 7,
-                                 set_spar = 0.5, groups = 'OnlyBreastmilk,mixed')
+                                 set_spar = 0.5, groups = c('OnlyBreastmilk','mixed'))
 sliding_spliner.plot.pvals(bifido_slider, xvar = 'timepoint')
 ```
 
