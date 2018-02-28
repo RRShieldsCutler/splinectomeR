@@ -134,7 +134,7 @@ if (!is.na(plot_path)) {
           axis.line = element_line(colour = 'black'),
           axis.ticks = element_line(colour = 'black'))
   
-  ggsave(plot_path, height = 3.5, width = 4, units = 'in', dpi = 600)
+  ggsave(p, filename = plot_path, height = 3.5, width = 4, units = 'in', dpi = 600)
   cat(paste('Plot saved\n'))
 }
 

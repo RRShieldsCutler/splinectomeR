@@ -62,7 +62,7 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   df <- data
   
   # Determine the groups to be compared
-  if (is.na(groups)) {
+  if (is.na(groups[1])) {
     if (length(unique(df[, category])) > 2) {
       stop('More than two groups in category column. Define groups with groups = "Name1,Name2"')
     }

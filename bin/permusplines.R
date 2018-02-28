@@ -73,14 +73,18 @@ perms <- as.numeric(opt$perms)  # default 999
 cut_low <- opt$cut
 spar_param <- opt$spar # default NULL
 ints <- opt$intervals 
-plot_path <- opt$plot  # name of the plot file.png
+plot_path <- opt$plot_path  # name of the plot file.png
 
-# TODO: Wrap the package function
+if (!is.na(groups)) {
+  g1 <- strsplit(groups, ',')[[1]][1]
+  g2 <- strsplit(groups, ',')[[1]][2]
+  groups_in <- c(g1,g2)
+}
 
 df <- read.delim(file = infile, header = 1, check.names = F, sep = '\t')
 
 result <- permuspliner(data = df, xvar = xvar, yvar = yvar, category = category,
-                       cases = cases, groups = groups, ints = ints, perms = perms,
+                       cases = cases, groups = groups_in, ints = ints, perms = perms,
                        set_spar = spar_param, cut_low = cut_low)
 
 if (!is.na(plot_path)) {
@@ -118,7 +122,7 @@ if (!is.na(plot_path)) {
           axis.line = element_line(colour = 'black'),
           axis.ticks = element_line(colour = 'black'))
   
-  ggsave(plot_path, height = 3.5, width = 4, units = 'in', dpi = 600)
+  ggsave(p, filename = plot_path, height = 3.5, width = 4, units = 'in', dpi = 600)
   cat(paste('Plot saved\n'))
 }
 

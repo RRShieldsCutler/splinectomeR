@@ -50,7 +50,7 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
   
   in_df <- data
   # Determine the two groups to compare
-  if (is.na(groups)) {
+  if (is.na(groups[1])) {
     if (length(unique(in_df[, category])) > 2) {
       stop('More than two groups in category column. Define groups with (groups = "Name1,Name2")')
     }

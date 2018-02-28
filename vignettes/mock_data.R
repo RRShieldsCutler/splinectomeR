@@ -73,7 +73,7 @@ permuspliner.plot.permsplines(permu_result4, xvar = 'time', yvar = 'response')
 
 slide_result <- sliding_spliner(data = df_bound, xvar='time', yvar='response',
                                 cases = 'patient', category = 'Version',
-                                groups = 'base,shift_2x')
+                                groups = c('base','shift_2x'))
 sliding_spliner.plot.pvals(slide_result, xvar = 'time')  # Show there are small regions of significant difference
 
 # If you average the first and last two points, is there a difference across time?
