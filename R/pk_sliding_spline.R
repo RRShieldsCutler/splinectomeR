@@ -167,12 +167,13 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   # Assemble the final results object
   result <- list('pval_table' = pval.df, 'spline_table' = spl.table,
                  'spline_longform' = plot.spline.data)
-  return(result)
   if (quiet == FALSE) {
-    cat(paste('\nTo visualize your results, try the following command:'))
-    cat(paste0('\nsliding_spliner.plot.splines(data=', deparse(substitute(result)),
-               ', xvar="', xvar, '", yvar="', yvar, '", category="', category, '")'))
+    resname <- deparse(substitute(result))
+    cat(paste('\nTo visualize your results, try the following commands, where "data" is your results object:'))
+    cat(paste0('\nsliding_spliner.plot.splines(data, xvar="', xvar, '", yvar="', yvar, '", category="', category, '")'))
+    cat(paste0('\nor\nsliding_spliner.plot.pvals(data, xvar="', xvar,'")'))
   }
+  return(result)
 }
 
 #' @title Plot group splines

@@ -11,6 +11,7 @@ colnames(df_orig) <- c('patient','time','response')
 ids <- c(1,2,3,4,5,6,7,8,9,10)
 timeseries <- c(0,2,4,6,8,10,12,14,16,18,20,22)
 patient <- unlist(lapply(X = ids, FUN = function(xx) rep(xx, times=12)))
+set.seed(7)
 obs <- c(rnorm(n=10, mean = 100, sd = 2),  # Make a distribution at each timepoint
          rnorm(n=10, mean = 100, sd = 4),
          rnorm(n=10, mean = 100, sd = 6),
@@ -35,7 +36,7 @@ dfm4 <- df_orig
 dfm5 <- df_orig
 z <- c(0,0.02,0.12,0.35,0.45,.55,0.45,0.38,0.2,0.1,0.01,0)  # Values by which to perturb the data
 shifter <- c(z,z,z,z,z,z,z,z,z,z)
-dfm2$Version <- 'base'
+dfm2$Version <- 'baseline'
 # Make perturbed data at several magnitudes by scaling z
 dfm3$response <- dfm2$response + (dfm2$response * (shifter/20))
 dfm3$Version <- 'shift_1x'; dfm3$patient <- paste(dfm3$patient, '1x', sep = '_')
@@ -60,20 +61,20 @@ ggsave(dfm_lm, filename = '~/Box Sync/knights_box/splinectomer/doc/manuscript/fi
 
 permu_result1 <- permuspliner(data = dfm_bound, xvar='time', yvar='response',
                              cases = 'patient', category = 'Version',
-                             perms = 999, groups = 'base,shift_1x')
+                             perms = 99, groups = c('baseline','shift_1x'))
 permu_result2 <- permuspliner(data = dfm_bound, xvar='time', yvar='response',
                              cases = 'patient', category = 'Version',
-                             perms = 999, groups = 'base,shift_2x')
+                             perms = 999, groups = c('baseline','shift_2x'))
 permu_result4 <- permuspliner(data = dfm_bound, xvar='time', yvar='response',
                              cases = 'patient', category = 'Version',
-                             perms = 999, groups = 'base,shift_4x')
+                             perms = 999, groups = c('baseline','shift_4x'))
 
 permuspliner.plot.permdistance(permu_result4, xlabel = 'time')
 permuspliner.plot.permsplines(permu_result4, xvar = 'time', yvar = 'response')
 
 slide_result <- sliding_spliner(data = df_bound, xvar='time', yvar='response',
                                 cases = 'patient', category = 'Version',
-                                groups = c('base','shift_2x'))
+                                groups = c('baseline','shift_2x'))
 sliding_spliner.plot.pvals(slide_result, xvar = 'time')  # Show there are small regions of significant difference
 
 # If you average the first and last two points, is there a difference across time?
@@ -94,7 +95,7 @@ df4 <- df_orig
 df5 <- df_orig
 z <- c(0,0.2,.4,0.4,0.2,0.05,-.1,-.2,-.38,-0.3,-.1,0)  # Scale to perturb the data
 shifter2 <- c(z,z,z,z,z,z,z,z,z,z)
-df2$Version <- 'base'
+df2$Version <- 'baseline'
 # Make perturbed data at several magnitudes by scaling z
 df3$response <- df2$response + (df2$response * (shifter2/20))
 df3$Version <- 'shift_1x'; df3$patient <- paste(df3$patient, '1x', sep = '_')
@@ -119,17 +120,17 @@ ggsave(df_lm, filename = '~/Box Sync/knights_box/splinectomer/doc/manuscript/fig
 
 permu_result1 <- permuspliner(data = df_bound, xvar='time', yvar='response',
                              cases = 'patient', category = 'Version',
-                             perms = 999, groups = 'base,shift_1x')
+                             perms = 999, groups = c('baseline','shift_1x'))
 permu_result2 <- permuspliner(data = df_bound, xvar='time', yvar='response',
                              cases = 'patient', category = 'Version',
-                             perms = 999, groups = 'base,shift_2x')
+                             perms = 999, groups = c('baseline','shift_2x'))
 permu_result4 <- permuspliner(data = df_bound, xvar='time', yvar='response',
                              cases = 'patient', category = 'Version',
-                             perms = 999, groups = 'base,shift_4x')
+                             perms = 999, groups = c('baseline','shift_4x'))
 # Run with 99 perms for plotting speed
 permu_result_plot <- permuspliner(data = df_bound, xvar='time', yvar='response',
                               cases = 'patient', category = 'Version',
-                              perms = 99, groups = 'base,shift_4x')
+                              perms = 99, groups = c('baseline','shift_4x'), retain_perm = T)
 permuspliner.plot.permdistance(permu_result_plot, xlabel = 'time')
 permuspliner.plot.permsplines(permu_result_plot, xvar = 'time', yvar = 'response')
 

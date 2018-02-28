@@ -209,14 +209,14 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
                    "v1_spline" = df_v1_spl, "v2_spline" = df_v2_spl,
                    "v1_data" = v1_data, "v2_data" = v2_data)
   }
-  return(result)
   if (quiet == FALSE) {
-    cat(paste('\nTo visualize your results, try the following command:'))
-    cat(paste0('\npermuspliner.plot.permdistance(', deparse(substitute(result)), ', xvar="', xvar,'")'))
+    cat(paste('\nTo visualize your results, try the following command, where "data" is your results object:'))
+    cat(paste0('\npermuspliner.plot.permdistance(data, xvar="', xvar,'")'))
     if (retain_perm == TRUE) {
-      cat(paste0('or\npermuspliner.plot.permsplines(data =', deparse(substitute(result)), ', xvar="', xvar, '", yvar="', yvar, '")'))
+      cat(paste0('\nor\npermuspliner.plot.permsplines(data, xvar="', xvar, '", yvar="', yvar, '")'))
     }
   }
+  return(result)
 }
 
 
