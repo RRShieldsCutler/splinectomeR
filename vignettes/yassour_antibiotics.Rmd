@@ -243,13 +243,15 @@ set.seed(11)  # For reproducibility
 
 ```{r bacteroidaceae feeding trends}
 result_mixedfeed <- trendyspliner(data = f__Bacteroidaceae.top_family_meta,
-                                  xvar = 'timepoint', quiet = F, cases = 'baby_id',
+                                  xvar = 'timepoint', quiet = T, cases = 'baby_id',
                                   mean_center = T, category = 'feeding_in_hospital',
                                   group = 'mixed', yvar = 'relative_abundance')
+cat(result_mixedfeed$pval)
 result_breastmilk <- trendyspliner(data = f__Bacteroidaceae.top_family_meta, 
-                                   xvar = 'timepoint', quiet = F, cases = 'baby_id',
+                                   xvar = 'timepoint', quiet = T, cases = 'baby_id',
                                    mean_center = T, category = 'feeding_in_hospital',
                                    group = 'OnlyBreastmilk', yvar = 'relative_abundance')
+cat(result_breastmilk$pval)
 ```
 
 Both are significant, meaning the abundance of _Bacteroidaceae_ is non-linear over this time course. But remember, we'd have to plot it to know what direction each is going.  
@@ -333,7 +335,7 @@ for (f in unique(top20_family_meta$family)) {
                        yvar = 'relative_abundance', perms = 99,
                        category = 'birth_mode', cases = 'baby_id',
                        cut_low = 6, quiet = T)
-  cat(f.result$pval)
+  cat('p-value =', f.result$pval)
 }
 
 ```
@@ -356,7 +358,7 @@ slideplots <- function(xx) {
   f.result <- sliding_spliner(data = f__df, xvar = 'timepoint',
                               yvar = 'relative_abundance', category = 'birth_mode',
                               cases = 'baby_id', test_density = 3,
-                              cut_low = 7, set_spar = 0.5)
+                              cut_low = 7, set_spar = 0.5, quiet = T)
   sliding_spliner.plot.pvals(f.result, xvar = 'timepoint')
   }
 lapply(birthmode_families, FUN = slideplots)
@@ -396,7 +398,8 @@ set.seed(11)  # For reproducibility
 Bacteroides_abx_result <- permuspliner(data = bacteroides_genus_meta, xvar = 'timepoint',
                                        yvar = 'relative_abundance', cases = 'baby_id',
                                        perms = 99, category = 'antibiotics_y_n',
-                                       retain_perm = T)
+                                       retain_perm = T, quiet = T)
+cat('p-value =', Bacteroides_abx_result$pval)
 ```
 This Genus is not significantly different between antibiotic exposure groups over the time series. But, let's check birth mode, since this was something of interest in the original report:
 
@@ -408,7 +411,8 @@ set.seed(11)  # For reproducibility
 Bacteroides_birthmode_result <- permuspliner(data = bacteroides_genus_meta, xvar = 'timepoint',
                                        yvar = 'relative_abundance', cases = 'baby_id',
                                        perms = 999, category = 'birth_mode',
-                                       retain_perm = F)
+                                       retain_perm = F, quiet = T)
+cat('p-value =', Bacteroides_birthmode_result$pval)
 ```
   
 The test supports the conclusion that the _Bacteroides_ genus is indeed significantly different in the vaginal vs. cesarean born infants over these three years. We can investigate if there is a particularly divergent region with the sliding spline test.  
@@ -417,10 +421,12 @@ The test supports the conclusion that the _Bacteroides_ genus is indeed signific
 bacteroides_slider <- sliding_spliner(data = bacteroides_genus_meta,
                                  xvar = 'timepoint', yvar = 'relative_abundance',
                                  category = 'birth_mode',
-                                 cases = 'baby_id', quiet = T, test_density = 5,
-                                 ints = 36, set_spar = 0.5, cut_low = 6)  # Set ints to 36 to go ~monthly
+                                 cases = 'baby_id', quiet = T, test_density = 3,  # Only four C-section births total
+                                 ints = 36, set_spar = 0.5, cut_low = 3)  # Set ints to 36 to go ~monthly
 sliding_spliner.plot.pvals(bacteroides_slider, xvar = 'timepoint')
 ```
+  
+Interestingly, the biggest differences are in the first 1-2 years. But, we know from the permuspliner test that these group differences are extensive enough to be significant over the entire 36-month time series. It is worth noting that there were only four cesarean births, so the groups are weighted differently in these comparisons.
   
 #### Does the ratio of Firmicutes to Bacteroidetes change over time?
 One parameter that is often studied in the microbiome is the ratio of Firmicutes to Bacteroidetes (Phlya) within individuals, and the correlations between changes in the F:B ratio and risk for health conditions like obesity ( [Ley et al., 2006](https://www.nature.com/nature/journal/v444/n7122/full/4441022a.html) ). Typically, infants have a low ratio (greater Bacteroidetes) but this is inverted in adults ( [Mariat et al., 2009](https://bmcmicrobiol.biomedcentral.com/articles/10.1186/1471-2180-9-123) ). Let's look at this ratio across all babies.  
@@ -450,7 +456,8 @@ firm_vs_oides_result <- permuspliner(data = all_phyla_meta, xvar = 'timepoint',
                       yvar = 'relative_abundance', cases = 'baby_id_phylum',
                       perms = 999, category = 'phyla',
                       groups = c('k__Bacteria.p__Bacteroidetes','k__Bacteria.p__Firmicutes'),
-                      retain_perm = T)
+                      retain_perm = T, quiet = T)
+cat('p-value =', firm_vs_oides_result$pval)
 ```
 
 But remember, these are relative abundances... So if studying two major phyla, when one goes down _in proportion_, the other expands _in proportion_. What we can do is either look at them individually (Do Bacteroidetes go up/down over time? Do Firmicutes?) or measure the ratio and then look at whether the change in the F:B ratio is non-zero over time. These questions can be answered using splinectomeR's `trendyspliner` test.  
@@ -474,7 +481,7 @@ firm_bact_birthmode_result <- permuspliner(data = phyla_tax_metadata_ratio,
                                            xvar = 'timepoint', yvar = 'firm_to_bact',
                                            cases = 'baby_id', category = 'birth_mode',
                                            quiet = T, perms = 99)
-firm_bact_birthmode_result$pval
+cat('Permuspliner p-value =', firm_bact_birthmode_result$pval)
 ```
 
 These results tell us that the Firmicutes/Bacteroidetes ratio is indeed changing over these three years, and presents as a significantly distinct trend between C-section and vaginally born babies (with the limitation of small C-section cohort). This demonstrates how this hypothesis is quickly and straightforwardly tested with these tools. Also, the plots still show how noisy the data is -- the large peaks out from the norm only result because there is considerable variability that, when shuffled in the right way, creates large differences by chance.  
@@ -494,13 +501,15 @@ genus_tax_metadata_ratio$prev_bact_ratio <-
 
 prev_bact_result <- trendyspliner(data = genus_tax_metadata_ratio, xvar = 'timepoint',
                                   yvar = 'prev_bact_ratio', cases = 'baby_id',
-                                  mean_center = T, perms = 99)
+                                  mean_center = T, perms = 99, quiet = T)
+cat('p-value =', prev_bact_result$pval)
 
 # Check the difference between birth modes (antibiotic use not really different, not shown)
 prev_bact_birthmode_result <- permuspliner(data = genus_tax_metadata_ratio,
                                            xvar = 'timepoint', yvar = 'prev_bact_ratio',
                                            cases = 'baby_id', category = 'birth_mode',
-                                           perms = 99)
+                                           perms = 99, quiet = T)
+cat('p-value =', prev_bact_birthmode_result$pval)
 ```
 
 If we look closely at the actual ratio values, they indicate that there is so little _Prevotella_ present in these babies that the results are harder to interpret; _Prevotella_ appears to be mostly abundant in the C-section babies, and this is what likely drives the permuspliner p value lower.  
@@ -524,7 +533,7 @@ head(bacteroides_genus_meta)
 
 bifido_slider <- sliding_spliner(data = bifidobacterium_genus_meta,
                                  xvar = 'timepoint', yvar = 'relative_abundance',
-                                 category = 'feeding_in_hospital',
+                                 category = 'feeding_in_hospital', quiet = T,
                                  cases = 'baby_id', test_density = 10, cut_low = 7,
                                  set_spar = 0.5, groups = c('OnlyBreastmilk','mixed'))
 sliding_spliner.plot.pvals(bifido_slider, xvar = 'timepoint')
@@ -565,8 +574,9 @@ clostrid_tax_metadata$clostridiales_abundance <-
 colnames(clostrid_tax_metadata)
 clostrid_result <- permuspliner(data = clostrid_tax_metadata,
                                 xvar = 'timepoint', yvar = 'clostridiales_abundance',
-                                category = 'antibiotics_y_n',
+                                category = 'antibiotics_y_n', quiet = T,
                                 cases = 'baby_id', retain_perm = T)
+cat('p-value =', clostrid_result$pval)
 ```
 
 Noteably, this is a _stronger_ result than when comparing relative abundance at 36 months, and provides even more support for their conclusions. We can also look at the plot to see where the differences mostly lie temporally.  
@@ -606,11 +616,13 @@ set.seed(11)  # For reproducibility
 ```{r test trends in alpha div, fig.height = 4, fig.width = 5.4}
 alpha_permresult_abx <- permuspliner(data = alphadiv_meta, xvar = 'timepoint',
                                  yvar = 'shannon', category = 'antibiotics_y_n',
-                                 cases = 'baby_id', perms = 99, retain_perm = T)
+                                 cases = 'baby_id', perms = 99, retain_perm = T, 
+                                 quiet = T)
 
 alpha_permresult_mode <- permuspliner(data = alphadiv_meta, xvar = 'timepoint',
                                  yvar = 'shannon', category = 'birth_mode',
-                                 cases = 'baby_id', perms = 99, retain_perm = T)
+                                 cases = 'baby_id', perms = 99, retain_perm = T,
+                                 quiet = T)
 
 p_abx <- permuspliner.plot.permsplines(data = alpha_permresult_abx,
                                    xvar = 'timepoint', yvar = 'shannon')
@@ -633,7 +645,7 @@ set.seed(11)  # For reproducibility
 ```{r sliding splines on alpha div}
 alpha_slide <- sliding_spliner(data = alphadiv_meta, xvar = 'timepoint',
                                yvar = 'shannon', category = 'birth_mode',
-                               cases = 'baby_id', set_spar = 0.5)
+                               cases = 'baby_id', set_spar = 0.5, quiet = T)
 sliding_spliner.plot.pvals(alpha_slide, xvar = 'timepoint')
 ```
   
@@ -647,7 +659,8 @@ set.seed(11)  # For reproducibility
 ```{r alpha div trends}
 alpha_trendresult_all <- trendyspliner(data = alphadiv_meta, xvar = 'timepoint',
                                        yvar = 'shannon', cases = 'baby_id',
-                                       perms = 99)
+                                       perms = 99, quiet = T)
+cat('p-value =', alpha_trendresult_all$pval)
 
 # And to visualize the trend in the context of the permuted data
 trendyspliner.plot.perms(alpha_trendresult_all, xlabel = 'time', ylabel = 'Shannon diversity')
@@ -656,13 +669,15 @@ trendyspliner.plot.perms(alpha_trendresult_all, xlabel = 'time', ylabel = 'Shann
 alpha_trendresult_abx <- trendyspliner(data = alphadiv_meta, xvar = 'timepoint',
                                        yvar = 'shannon', cases = 'baby_id', perms = 99,
                                        category = 'antibiotics_y_n',
-                                       group = 'Y')
+                                       group = 'Y', quiet = T)
+cat('p-value =', alpha_trendresult_abx$pval)
 
 # And in infants not exposed to antibiotics
 alpha_trendresult_noabx <- trendyspliner(data = alphadiv_meta, xvar = 'timepoint',
                                          yvar = 'shannon', cases = 'baby_id',
-                                         perms = 99,
+                                         perms = 99, quiet = T,
                                          category = 'antibiotics_y_n', group = 'N')
+cat('p-value =', alpha_trendresult_noabx$pval)
 ```
   
 Alpha diversity increases significantly in both groups, but the trends are not significantly different over time between antibiotics (from the previous tests).  

@@ -55,8 +55,6 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   # yvar = 'weight'  # the response variable label
   # cases = 'Chick'  # the header label defining the individuals (patients, etc)
   # ints = 100  # default 100
-  # sparsity = 3  # cutoff for number of points at given time; default 3 (>= 3)
-  # unit_number = 4  # min number of points needed per individual
   # set_spar = NULL  # default NULL
   
   df <- data
