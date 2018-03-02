@@ -386,24 +386,41 @@ dim(bacteroides_genus_meta)
 colnames(bacteroides_genus_meta)
 ```
 
-Now we can run the splinectomeR test.  
+Now we can run the splinectomeR test, first comparing antibiotic exposure:  
 
 ```{r include=FALSE}
 set.seed(11)  # For reproducibility
 ```
 
-```{r perumtation test on bacteroides genus}
+```{r permutation test on bacteroides genus}
 Bacteroides_abx_result <- permuspliner(data = bacteroides_genus_meta, xvar = 'timepoint',
                                        yvar = 'relative_abundance', cases = 'baby_id',
                                        perms = 99, category = 'antibiotics_y_n',
                                        retain_perm = T)
 ```
-Limiting to Genus does not appear to resolve any difference between the groups. Visualizing the spline distances should support this conclusion.
+This Genus is not significantly different between antibiotic exposure groups over the time series. But, let's check birth mode, since this was something of interest in the original report:
 
-```{r plot the bacteroides genus permutation result}
-permuspliner.plot.permdistance(Bacteroides_abx_result, xlabel = 'timepoint')
+```{r include=FALSE}
+set.seed(11)  # For reproducibility
 ```
 
+```{r permutation test on bacteroides genus and birth mode}
+Bacteroides_birthmode_result <- permuspliner(data = bacteroides_genus_meta, xvar = 'timepoint',
+                                       yvar = 'relative_abundance', cases = 'baby_id',
+                                       perms = 999, category = 'birth_mode',
+                                       retain_perm = F)
+```
+  
+The test supports the conclusion that the _Bacteroides_ genus is indeed significantly different in the vaginal vs. cesarean born infants over these three years. We can investigate if there is a particularly divergent region with the sliding spline test.  
+
+```{r sliding splines on bacteroides genus}
+bacteroides_slider <- sliding_spliner(data = bacteroides_genus_meta,
+                                 xvar = 'timepoint', yvar = 'relative_abundance',
+                                 category = 'birth_mode',
+                                 cases = 'baby_id', quiet = T, test_density = 5,
+                                 ints = 36, set_spar = 0.5, cut_low = 6)  # Set ints to 36 to go ~monthly
+sliding_spliner.plot.pvals(bacteroides_slider, xvar = 'timepoint')
+```
   
 #### Does the ratio of Firmicutes to Bacteroidetes change over time?
 One parameter that is often studied in the microbiome is the ratio of Firmicutes to Bacteroidetes (Phlya) within individuals, and the correlations between changes in the F:B ratio and risk for health conditions like obesity ( [Ley et al., 2006](https://www.nature.com/nature/journal/v444/n7122/full/4441022a.html) ). Typically, infants have a low ratio (greater Bacteroidetes) but this is inverted in adults ( [Mariat et al., 2009](https://bmcmicrobiol.biomedcentral.com/articles/10.1186/1471-2180-9-123) ). Let's look at this ratio across all babies.  

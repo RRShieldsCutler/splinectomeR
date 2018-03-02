@@ -211,7 +211,7 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
   }
   if (quiet == FALSE) {
     cat(paste('To visualize your results, try the following command, where "data" is your results object:'))
-    cat(paste0('\npermuspliner.plot.permdistance(data, xvar="', xvar,'")'))
+    cat(paste0('\npermuspliner.plot.permdistance(data, xlabel="', xvar,'")'))
     if (retain_perm == TRUE) {
       cat(paste0('\nor\npermuspliner.plot.permsplines(data, xvar="', xvar, '", yvar="', yvar, '")'))
     }
