@@ -1,7 +1,8 @@
 # splinectomeR
 #### R package of spline-based statistical analysis tools for longitudinal data
-[![DOI](https://zenodo.org/badge/94937505.svg)](https://zenodo.org/badge/latestdoi/94937505)
-__To cite:__
+[![DOI](https://zenodo.org/badge/94937505.svg)](https://zenodo.org/badge/latestdoi/94937505)  
+
+__To cite:__  
 Shields-Cutler RR, Al-Ghalith GA, Yassour M, Knights D. (2018) SplinectomeR Enables Group Comparisons in Longitudinal Microbiome Studies. _Frontiers in Microbiology_ doi: 10.3389/fmicb.2018.00785
 
 [Explore on the splinectomeR website](https://rrshieldscutler.github.io/splinectomeR/)
