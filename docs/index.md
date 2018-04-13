@@ -21,7 +21,8 @@ There are two vignettes available for this package:
 #### Disclaimer
 Licensed under the MIT License. As such, the `splinectomer` package is freely offered, without any warrantee or guarantee. It may be used, redistributed, or modified for non-commercial purposes with appropriate citation of the original work. You, the user, are solely responsible for verifying the legitimacy of your results.  
 
-#### DOI
+#### Citation
+Shields-Cutler RR, Al-Ghalith GA, Yassour M, Knights D. (2018) SplinectomeR Enables Group Comparisons in Longitudinal Microbiome Studies. _Frontiers in Microbiology_ doi: 10.3389/fmicb.2018.00785  
 [![DOI](https://zenodo.org/badge/94937505.svg)](https://zenodo.org/badge/latestdoi/94937505)
 
 ***
