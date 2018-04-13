@@ -23,6 +23,7 @@ Licensed under the MIT License. As such, the `splinectomer` package is freely of
 
 #### Citation
 Shields-Cutler RR, Al-Ghalith GA, Yassour M, Knights D. (2018) SplinectomeR Enables Group Comparisons in Longitudinal Microbiome Studies. _Frontiers in Microbiology_ doi: 10.3389/fmicb.2018.00785  
+  
 [![DOI](https://zenodo.org/badge/94937505.svg)](https://zenodo.org/badge/latestdoi/94937505)
 
 ***
