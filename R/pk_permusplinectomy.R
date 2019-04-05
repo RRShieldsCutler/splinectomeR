@@ -311,7 +311,8 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   true_v2$var <- var_2
   colnames(true_v2)[2] <- 'y'
   true_data <- rbind(true_v1, true_v2)
-  true_data$var <- factor(true_data$var)
+  var_labels <- factor(true_data$var, ordered = T)
+  true_data$var <- var_labels
   num_points <- length(true_v1$x)
   if (num_perms > 1000) {
     alpha_level <- 0.002
@@ -325,9 +326,9 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
     geom_line(data=permsplines, aes(x=as.numeric(x.par), y=as.numeric(y.par),
                                       group=factor(permutation)),
               alpha=alpha_level, size=1) +
-    geom_line(data=true_data, aes(x=as.numeric(x), y=as.numeric(y), color=factor(var)),
+    geom_line(data=true_data, aes(x=as.numeric(x), y=as.numeric(y), color=var_labels),
               size=1.2) +
-    scale_color_manual(name='', values=c('red','blue'), labels=c(var_1, var_2)) +
+    scale_color_manual(name='', values=c('red','blue')) +
         theme_classic() + theme(axis.text = element_text(color='black')) +
     xlab(xvar) + ylab(yvar)
   return(p)
