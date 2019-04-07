@@ -35,9 +35,17 @@
 #' result$pval
 
 trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
-                         cases = NULL, group = NULL, mean_center = FALSE, perms = 999, set_spar = NULL,
-                         cut_low = NULL, ints = 1000, quiet = FALSE, pmethod = 'loess') {
+                         cases = NULL, group = NULL, mean_center = FALSE, perms = 999,
+                         cut_low = NULL, ints = 1000, quiet = FALSE, ...) {
   
+  suppargs <- list(...)
+  if ("set_spar" %in% names(suppargs)) {
+    set_spar = as.numeric(suppargs$set_spar)
+  } else {set_spar <- NULL}
+  
+  if ("pmethod" %in% names(suppargs)) {
+    pmethod = as.character(suppargs$pmethod)
+  } else {pmethod <- 'loess'}
   
   reqs = c(data, xvar, yvar, cases)
   if (any(is.null(reqs))) {

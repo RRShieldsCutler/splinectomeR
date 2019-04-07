@@ -31,9 +31,17 @@
 #' 
 
 sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
-                            cases = NA, groups = NA, set_spar = NULL,
-                            cut_low = 4, test_density = 3, ints = 100, quiet = FALSE,
-                            pmethod='loess') {
+                            cases = NA, groups = NA, cut_low = 4,
+                            test_density = 3, ints = 100, quiet = FALSE, ...) {
+  
+  suppargs <- list(...)
+  if ("set_spar" %in% names(suppargs)) {
+    set_spar = as.numeric(suppargs$set_spar)
+  } else {set_spar <- NULL}
+  
+  if ("pmethod" %in% names(suppargs)) {
+    pmethod = as.character(suppargs$pmethod)
+  } else {pmethod <- 'loess'}
   
   require(reshape2)
   

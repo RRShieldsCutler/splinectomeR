@@ -31,10 +31,22 @@
 
 permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
                          cases = NULL, groups = NA, perms = 999, retain_perm = TRUE,
-                         test_direction = 'more', set_spar = NULL, cut_low = NA,
-                         ints = 1000, quiet = FALSE, set_tol = 1e-4, cut_sparse = 4,
-                         pmethod = 'loess') {
+                         test_direction = 'more', cut_low = NA,
+                         ints = 1000, quiet = FALSE, cut_sparse = 4, ...) {
 
+  suppargs <- list(...)
+  if ("set_spar" %in% names(suppargs)) {
+    set_spar = as.numeric(suppargs$set_spar)
+  } else {set_spar <- NULL}
+  
+  if ("set_tol" %in% names(suppargs)) {
+    set_tol = as.numeric(suppargs$set_tol)
+  } else {set_tol <- 1e-4}
+  
+  if ("pmethod" %in% names(suppargs)) {
+    pmethod = as.character(suppargs$pmethod)
+  } else {pmethod <- 'loess'}
+  
   # reqs = c(data, category, xvar, yvar, cases)
   if (missing(data) | missing(category) | missing(xvar) | missing(yvar) | missing(cases)) {
     stop('Missing required parameter(s). Run ?permuspliner to see help docs')
