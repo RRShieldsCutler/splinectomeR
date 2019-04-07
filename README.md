@@ -30,14 +30,14 @@ An example using the `ChickWeight` dataset from the `datasets` package:
 ```R
 > # Test for difference in weight change over time between Diet groups 1 and 2
 > result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', perms=99,
-                         cases = 'Chick', category = 'Diet', groups = c('1','3'))
+                         cases = 'Chick', category = 'Diet', groups = c('1','4'))
 > result$pval
-[1] 0.02
+[1] 0.001
 > # Test for difference in weight change over time between Diet groups 2 and 3
 > result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', perms=99
                          cases = 'Chick', category = 'Diet', groups = c('2','3'))
 > result$pval
-[1] 0.19
+[1] 0.207
 ```
 #### Trendyspliner
 This function tests for a non-zero trend in the response over the x variable. Input data is a dataframe with the following columns at minimum:
