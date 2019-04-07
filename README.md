@@ -29,15 +29,15 @@ This function tests for a greater-than-chance difference between two groups of i
 An example using the `ChickWeight` dataset from the `datasets` package:
 ```R
 > # Test for difference in weight change over time between Diet groups 1 and 2
-> result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight',
-                         cases = 'Chick', category = 'Diet', groups = c('1','2'))
+> result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', perms=99,
+                         cases = 'Chick', category = 'Diet', groups = c('1','3'))
 > result$pval
-[1] 0.003
+[1] 0.02
 > # Test for difference in weight change over time between Diet groups 2 and 3
-> result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight',
+> result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', perms=99
                          cases = 'Chick', category = 'Diet', groups = c('2','3'))
 > result$pval
-[1] 0.159
+[1] 0.19
 ```
 #### Trendyspliner
 This function tests for a non-zero trend in the response over the x variable. Input data is a dataframe with the following columns at minimum:
@@ -50,8 +50,6 @@ If the dataframe contains multiple groups/populations, and a trend is sought for
 > # Test for non-zero trend in Chick weight in Diet group 1 over Time
 > result <- trendyspliner(data = ChickWeight, x = 'Time', y = 'weight',
                           cases = 'Chick', category = 'Diet', group = '1', perms = 999)
-> result$pval
-[1] 0.001
 ```
 For further details and an example, check out the help docs for each function.
 ```R
