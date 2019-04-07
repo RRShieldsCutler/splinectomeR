@@ -32,7 +32,8 @@
 
 sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
                             cases = NA, groups = NA, set_spar = NULL,
-                            cut_low = 4, test_density = 3, ints = 100, quiet = FALSE) {
+                            cut_low = 4, test_density = 3, ints = 100, quiet = FALSE,
+                            pmethod='loess') {
   
   require(reshape2)
   
@@ -98,11 +99,21 @@ sliding_spliner <- function(data = NA, xvar = NA, yvar = NA, category = NA,
   spl.table <- setNames(data.frame(xrang), c('x'))
   for (i in cases.keep) {
     unit.df <- subset(df, df[, cases]==i)
+    if (pmethod=='cubic') {
     unit.spl <- with(unit.df,
                     smooth.spline(x=unit.df[, xvar], y=unit.df[, yvar],
                                   spar = set_spar))
+    } else if (pmethod == 'loess') {
+      testform <- reformulate(termlabels = xvar, response = yvar)
+      if (is.null(set_spar)) {
+        unit.spl <- with(unit.df, loess(testform, data=unit.df))
+      } else {
+        unit.spl <- with(unit.df, loess(testform, data=unit.df, span = set_spar))
+      }
+    }
     xrang.i <- subset(xrang, xrang >= min(unit.spl$x) & xrang <= max(unit.spl$x))
     unit.spl.f <- data.frame(predict(unit.spl, xrang.i))
+    if (ncol(unit.spl.f)==1) unit.spl.f <- cbind(xrang.i, unit.spl.f)
     colnames(unit.spl.f) <- c('x', i)
     spl.table <- merge(spl.table, unit.spl.f, by = 'x', all = T)
   }

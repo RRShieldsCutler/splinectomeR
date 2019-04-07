@@ -36,7 +36,7 @@
 
 trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
                          cases = NULL, group = NULL, mean_center = FALSE, perms = 999, set_spar = NULL,
-                         cut_low = NULL, ints = 1000, quiet = FALSE) {
+                         cut_low = NULL, ints = 1000, quiet = FALSE, pmethod = 'loess') {
   
   
   reqs = c(data, xvar, yvar, cases)
@@ -107,9 +107,18 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   }
   
   # Fit the spline
+  if (pmethod=='cubic') {
   df.spl <- with(df,
                    smooth.spline(x=df[, xvar], y=df[, yvar],
                                  spar = set_spar))
+  } else if (pmethod == 'loess') {
+    testform <- reformulate(termlabels = xvar, response = yvar)
+    if (is.null(set_spar)) {
+      df.spl <- with(df, loess(testform, data=df))
+    } else {
+      df.spl <- with(df, loess(testform, data=df, span = set_spar))
+    }
+  }
   x0 <- min(df.spl$x)
   x1 <- max(df.spl$x)
   x0 <- x0 + ((x1 - x0) * 0.05)  # Trim the first and last 5% to avoid low-density artifacts
@@ -117,6 +126,7 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   xby <- (x1 - x0) / (ints - 1)  # Set the range
   xx <- seq(from = x0, to = x1, by = xby)  # Set the intervals for the test
   spl.fit <- data.frame(predict(df.spl, xx))  # Interpolate the spline over the intervals
+  if (ncol(spl.fit)==1) spl.fit <- cbind(xx,spl.fit)
   colnames(spl.fit) <- c('x', 'var1')
   y_base = spl.fit$var1[1]   # Null hypothesis: trend doesn't vary from zero over x axis
   real.spl.dist <- spl.fit
@@ -133,10 +143,20 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
     randy.meta <- randy[, c(cases, xvar)]
     randy.meta$y_shuff <- sample(randy[, yvar])
     # Fit the permuted spline
+    if (pmethod == 'cubic') {
     randy.spl <- with(randy.meta, smooth.spline(x = randy.meta[, xvar],
                                               y = randy.meta$y_shuff,
                                               spar = set_spar))
+    } else if (pmethod == 'loess') {
+      testform <- reformulate(termlabels = xvar, response = y_shuff)
+      if (is.null(set_spar)) {
+        randy.spl <- with(randy.meta, loess(testform, data=randy.meta))
+      } else {
+        randy.spl <- with(randy.meta, loess(testform, data=randy.meta, span = set_spar))
+      }
+    }
     randy.fit <- data.frame(predict(randy.spl, xx))
+    if (ncol(randy.fit)==1) randy.fit <- cbind(xx,randy.fit)
     colnames(randy.fit) <- c('x', 'var1')
     transfer.perms <- randy.fit
     colnames(transfer.perms)[2] <- c(paste0('perm_', ix))
@@ -148,7 +168,7 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
     p_base = randy.fit$var1[1]  # Baseline for the permuted distribution
     randy.fit$p_base <- p_base
     randy.fit$distance <- (randy.fit$var1 - randy.fit$p_base)
-    perm.area <- sum(randy.fit$distance) / ints  # Area above baseline for permutation
+    perm.area <- sum(randy.fit$distance, na.rm = T) / sum(!is.na(randy.fit$distance))  # Area above baseline for permutation
     permuted <- append(permuted, perm.area)
     perm_output$permuted <- permuted
     return(perm_output)
@@ -228,7 +248,7 @@ trendyspliner.plot.perms <- function(data = NULL, xlabel=NULL, ylabel=NULL) {
   p <- ggplot() +
     geom_line(data=permsplines, aes(x=as.numeric(x), y=as.numeric(y.par),
                                     group=factor(permutation)),
-              alpha=alpha_level, size=0.9) +
+              alpha=alpha_level, size=0.9, na.rm = T) +
     geom_line(data=true_df, aes(x=as.numeric(x), y=as.numeric(y)),
               size=1.2, color = 'red') +
     theme_classic() + theme(axis.text = element_text(color='black')) +

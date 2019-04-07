@@ -32,7 +32,8 @@
 permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
                          cases = NULL, groups = NA, perms = 999, retain_perm = TRUE,
                          test_direction = 'more', set_spar = NULL, cut_low = NA,
-                         ints = 1000, quiet = FALSE, set_tol = 1e-4, cut_sparse = 4) {
+                         ints = 1000, quiet = FALSE, set_tol = 1e-4, cut_sparse = 4,
+                         pmethod = 'loess') {
 
   # reqs = c(data, category, xvar, yvar, cases)
   if (missing(data) | missing(category) | missing(xvar) | missing(yvar) | missing(cases)) {
@@ -85,12 +86,23 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
          ...Please ensure that the cases are uniquely labeled between the two groups\n')
   }
   # Fit the splines for each group
+  if (pmethod=='cubic') {
   df_v1_spl <- with(df_v1,
                    smooth.spline(x=df_v1[, xvar], y=df_v1[, yvar],
                                  spar = set_spar, tol = set_tol))
   df_v2_spl <- with(df_v2,
                    smooth.spline(x=df_v2[, xvar], y=df_v2[, yvar],
                                  spar = set_spar, tol = set_tol))
+  } else if (pmethod == 'loess') {
+    testform <- reformulate(termlabels = xvar, response = yvar)
+    if (is.null(set_spar)) {
+      df_v1_spl <- with(df_v1, loess(testform, data=df_v1))
+      df_v2_spl <- with(df_v2, loess(testform, data=df_v2))
+    } else {
+      df_v1_spl <- with(df_v1, loess(testform, data=df_v1, span = set_spar))
+      df_v2_spl <- with(df_v2, loess(testform, data=df_v2, span = set_spar))
+    }
+  }
   x0 <- max(c(min(df_v1_spl$x)), min(df_v2_spl$x))
   x1 <- min(c(max(df_v1_spl$x)), max(df_v2_spl$x))
   x0 <- x0 + ((x1 - x0) * 0.1)  # Trim the first and last 10% to avoid low-density artifacts
@@ -98,8 +110,10 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
   xby <- (x1 - x0) / (ints - 1)
   xx <- seq(x0, x1, by = xby)  # Set the interval range
   v1_spl_f <- data.frame(predict(df_v1_spl, xx))  # Interpolate across the spline
+  if (ncol(v1_spl_f)==1) v1_spl_f <- cbind(xx,v1_spl_f)
   colnames(v1_spl_f) <- c('x', 'var1')
   v2_spl_f <- data.frame(predict(df_v2_spl, xx))
+  if (ncol(v2_spl_f)==1) v2_spl_f <- cbind(xx,v2_spl_f)
   colnames(v2_spl_f) <- c('x', 'var2')
   real_spl_dist <- merge(v1_spl_f, v2_spl_f, by = 'x')
   real_spl_dist$abs.distance <- abs(real_spl_dist$var1 - real_spl_dist$var2)  # Measure the real group distance
@@ -117,19 +131,27 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
     randy_v1 <- randy[randy[, case_shuff] %in% c(v1) & !is.na(randy[, xvar]), ]
     randy_v2 <- randy[randy[, case_shuff] %in% c(v2) & !is.na(randy[, xvar]), ]
     # Fit the splines for the permuted groups
+    if (pmethod == 'cubic') {
     randy_v1_spl <- with(randy_v1,
                         smooth.spline(x=randy_v1[, xvar], y=randy_v1[, yvar],
                                       spar = set_spar, tol = set_tol))
     randy_v2_spl <- with(randy_v2,
                         smooth.spline(x=randy_v2[, xvar], y=randy_v2[, yvar],
                                       spar = set_spar, tol = set_tol))
-    # x0 <- max(c(min(randy_v1_spl$x)), min(randy_v2_spl$x))
-    # x1 <- min(c(max(randy_v1_spl$x)), max(randy_v2_spl$x))
-    # xby <- (x1 - x0) / (ints - 1)
-    # xx <- seq(x0, x1, by = xby)
+    } else if (pmethod == 'loess') {
+      if (is.null(set_spar)) {
+        randy_v1_spl <- with(randy_v1, loess(testform, data=randy_v1))
+        randy_v2_spl <- with(randy_v2, loess(testform, data=randy_v2))
+      } else {
+        randy_v1_spl <- with(randy_v1, loess(testform, data=randy_v1, span = set_spar))
+        randy_v2_spl <- with(randy_v2, loess(testform, data=randy_v2, span = set_spar))
+      }
+    }
     randy_v1_fit <- data.frame(predict(randy_v1_spl, xx))
+    if (ncol(randy_v1_fit)==1) randy_v1_fit <- cbind(xx,randy_v1_fit)
     colnames(randy_v1_fit) <- c('x', 'var1')
     randy_v2_fit <- data.frame(predict(randy_v2_spl, xx))
+    if (ncol(randy_v2_fit)==1) randy_v2_fit <- cbind(xx,randy_v2_fit)
     colnames(randy_v2_fit) <- c('x', 'var2')
     spl_dist <- merge(randy_v1_fit, randy_v2_fit, by = 'x')
     spl_dist$abs_distance <- abs(spl_dist$var1 - spl_dist$var2)  # Calculate the distance between permuted groups
@@ -141,7 +163,7 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
       if (ix > 1) perm_retainer <- perm_output$perm_retainer
       perm_retainer <- cbind(perm_retainer, transfer_perms)
       perm_output$perm_retainer <- perm_retainer
-      perm_area <- sum(spl_dist$abs_distance) / ints  # Calculate the area between permuted groups
+      perm_area <- sum(spl_dist$abs_distance, na.rm = T) / sum(!is.na(spl_dist$abs_distance))  # Calculate the area between permuted groups
       
       if (ix > 1) permuted <- perm_output$permuted
       permuted <- append(permuted, perm_area)
@@ -150,7 +172,7 @@ permuspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL,
     } else if (retain_perm == FALSE) {
       # print(summary(xx))
       # spl_dist$abs_distance <- abs(spl_dist$var1 - spl_dist$var2)
-      perm_area <- sum(spl_dist$abs_distance) / ints
+      perm_area <- sum(spl_dist$abs_distance, na.rm = T) / sum(!is.na(spl_dist$abs_distance))
       permuted <- append(permuted, perm_area)
       return(permuted)
     }
@@ -261,7 +283,7 @@ permuspliner.plot.permdistance <- function(data, xlabel=NULL) {
   p <- ggplot() +
     geom_line(data=dists, aes(x=as.numeric(x.par), y=as.numeric(permuted_distance),
                               group=factor(permutation)), 
-              color='black', alpha=alpha_level, size=1) +
+              color='black', alpha=alpha_level, size=1, na.rm = T) +
     geom_line(data=true_dist, aes(x=as.numeric(x), y=as.numeric(abs.distance)),
               color='red', size=1.5) +
     theme_classic() + theme(axis.text = element_text(color='black')) +
@@ -325,7 +347,7 @@ permuspliner.plot.permsplines <- function(data = NULL, xvar=NULL, yvar=NULL) {
   p <- ggplot() +
     geom_line(data=permsplines, aes(x=as.numeric(x.par), y=as.numeric(y.par),
                                       group=factor(permutation)),
-              alpha=alpha_level, size=1) +
+              alpha=alpha_level, size=1, na.rm = T) +
     geom_line(data=true_data, aes(x=as.numeric(x), y=as.numeric(y), color=var_labels),
               size=1.2) +
     scale_color_manual(name='', values=c('red','blue')) +
