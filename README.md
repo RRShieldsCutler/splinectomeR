@@ -2,14 +2,11 @@
 #### R package of spline-based statistical analysis tools for longitudinal data
 [Explore on the splinectomeR website](https://rrshieldscutler.github.io/splinectomeR/)  
  
-__To cite:__  
-Shields-Cutler RR, Al-Ghalith GA, Yassour M, Knights D. (2018) SplinectomeR Enables Group Comparisons in Longitudinal Microbiome Studies. _Frontiers in Microbiology_ 9:785. doi: 10.3389/fmicb.2018.00785  
-[![DOI](https://zenodo.org/badge/94937505.svg)](https://zenodo.org/badge/latestdoi/94937505)  
 ***
 These functions are designed to provide statistical analyses in _real_ longitudinal data, which may be missing timepoints, possess limited data at some timepoints, have noisy biological variability, and variable numbers of observations per individual being measured. Comparisons can be made between two groups or within a single group for a non-zero change over the independent axis; both return a p-value based on a randomly permuted distribution of the real data. There is also a function for measuring significant differences at intervals across the entire x series (e.g. time) by interpolating splines from the original data.
 
 ### R package installation:
-Recommended: Install v.0.9.0 from the pre-release, [here](https://github.com/RRShieldsCutler/splinectomeR/releases/tag/v0.9.0).
+Recommended: Install v.0.9.3 from the releases, [here](https://github.com/RRShieldsCutler/splinectomeR/releases/tag/v0.9.3).
 
 To install the latest development version from GitHub, you can use the `devtools` package. Beware, this version is actively worked on and may not be stable; therefore we highly recommend installing the pre-release. To install with devtools, run the following command:
 ```R
@@ -17,7 +14,7 @@ To install the latest development version from GitHub, you can use the `devtools
 > library(splinectomeR)
 ```
   
-There is also a command line executable version (still requires R package installation); instructions located [below](#the-command-line-version).
+There is also a command line executable version (still requires R package installation); instructions located [below](#the-command-line-version). Note that the R package version is a little more robustly tested...
   
 #### Permuspliner
 This function tests for a greater-than-chance difference between two groups of interest over the x variable (e.g. time). Input data is a dataframe with the following columns at minimum:  
@@ -28,16 +25,16 @@ This function tests for a greater-than-chance difference between two groups of i
   
 An example using the `ChickWeight` dataset from the `datasets` package:
 ```R
-> # Test for difference in weight change over time between Diet groups 1 and 2
+> # Test for difference in weight change over time between Diet groups 1 and 4
 > result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight',
-                         cases = 'Chick', category = 'Diet', groups = c('1','2'))
+                         cases = 'Chick', category = 'Diet', groups = c('1','4'))
 > result$pval
-[1] 0.003
+[1] 0.001
 > # Test for difference in weight change over time between Diet groups 2 and 3
 > result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight',
                          cases = 'Chick', category = 'Diet', groups = c('2','3'))
 > result$pval
-[1] 0.159
+[1] 0.207
 ```
 #### Trendyspliner
 This function tests for a non-zero trend in the response over the x variable. Input data is a dataframe with the following columns at minimum:
@@ -50,8 +47,6 @@ If the dataframe contains multiple groups/populations, and a trend is sought for
 > # Test for non-zero trend in Chick weight in Diet group 1 over Time
 > result <- trendyspliner(data = ChickWeight, x = 'Time', y = 'weight',
                           cases = 'Chick', category = 'Diet', group = '1', perms = 999)
-> result$pval
-[1] 0.001
 ```
 For further details and an example, check out the help docs for each function.
 ```R
@@ -111,7 +106,7 @@ chmod +x script_name.R
 ```
   
 ### Dependencies
-These scripts have been developed and tested in R version 3.3.1 on Mac OSX. Currently, the following R packages are required:
+These scripts have been developed and tested in R version 3.3.1 on Mac OSX, currently tested on 3.5.0 as well. The following R packages are required:
 
 * The splinectomeR package
 * Required for the permusplineR package:
@@ -175,5 +170,8 @@ sliding_splines.R -i ChickWeight.txt -s Chick -c Diet -x Time -y weight --groups
 # chick weights at early timepoints, but this difference is not maintained 
 # through the end of the experiment.
 ```
-
+***
+__To cite:__  
+Shields-Cutler RR, Al-Ghalith GA, Yassour M, Knights D. (2018) SplinectomeR Enables Group Comparisons in Longitudinal Microbiome Studies. _Frontiers in Microbiology_ 9:785. doi: 10.3389/fmicb.2018.00785  
+[![DOI](https://zenodo.org/badge/94937505.svg)](https://zenodo.org/badge/latestdoi/94937505)  
 
