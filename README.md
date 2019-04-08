@@ -28,13 +28,13 @@ This function tests for a greater-than-chance difference between two groups of i
   
 An example using the `ChickWeight` dataset from the `datasets` package:
 ```R
-> # Test for difference in weight change over time between Diet groups 1 and 2
-> result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', perms=99,
+> # Test for difference in weight change over time between Diet groups 1 and 4
+> result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight',
                          cases = 'Chick', category = 'Diet', groups = c('1','4'))
 > result$pval
 [1] 0.001
 > # Test for difference in weight change over time between Diet groups 2 and 3
-> result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight', perms=99
+> result <- permuspliner(data = ChickWeight, x = 'Time', y = 'weight',
                          cases = 'Chick', category = 'Diet', groups = c('2','3'))
 > result$pval
 [1] 0.207
