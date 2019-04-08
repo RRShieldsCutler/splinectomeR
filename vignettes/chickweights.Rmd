@@ -1,7 +1,5 @@
 ---
 title: "Analyzing Chick Weights with splinectomeR"
-author: "Robin Shields-Cutler"
-date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Analyzing Chick Weights with splinectomeR}

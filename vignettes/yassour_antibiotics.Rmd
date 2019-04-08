@@ -1,7 +1,5 @@
 ---
 title: "Yassour et al (Science Trans Med, 2016) Antibiotics Cohort analysis with splinectomeR"
-author: "Robin Shields-Cutler"
-date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Yassour et al (Science Trans Med, 2016) Antibiotics Cohort analysis with splinectomeR}
@@ -283,7 +281,7 @@ for (f in unique(top20_family_meta$family)) {
                        yvar = 'relative_abundance', perms = 99,
                        category = 'antibiotics_y_n', cases = 'baby_id',
                        cut_low = 6, quiet = T)
-  cat(f.result$pval)
+  cat(paste0(', p = ',f.result$pval,'\n'))
   f_top20_abx_pvals <- append(f_top20_abx_pvals, f.result$pval)
 }
 f_top20_abx_qvals <- p.adjust(f_top20_abx_pvals, method = 'fdr')  # Adjusted p values
@@ -335,7 +333,7 @@ for (f in unique(top20_family_meta$family)) {
                        yvar = 'relative_abundance', perms = 99,
                        category = 'birth_mode', cases = 'baby_id',
                        cut_low = 6, quiet = T)
-  cat('p-value =', f.result$pval)
+  cat(paste0(', p = ', f.result$pval, '\n'))
 }
 
 ```
