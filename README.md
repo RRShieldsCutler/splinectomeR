@@ -6,7 +6,7 @@
 These functions are designed to provide statistical analyses in _real_ longitudinal data, which may be missing timepoints, possess limited data at some timepoints, have noisy biological variability, and variable numbers of observations per individual being measured. Comparisons can be made between two groups or within a single group for a non-zero change over the independent axis; both return a p-value based on a randomly permuted distribution of the real data. There is also a function for measuring significant differences at intervals across the entire x series (e.g. time) by interpolating splines from the original data.
 
 ### R package installation:
-Recommended: Install v.0.9.3 from the releases, [here](https://github.com/RRShieldsCutler/splinectomeR/releases/tag/v0.9.3).
+Recommended: Install v.0.9.3b from the releases, [here](https://github.com/RRShieldsCutler/splinectomeR/releases/tag/v0.9.3b).
 
 To install the latest development version from GitHub, you can use the `devtools` package. Beware, this version is actively worked on and may not be stable; therefore we highly recommend installing the pre-release. To install with devtools, run the following command:
 ```R
