@@ -26,3 +26,5 @@ vignettes/*.pdf
 .Rproj.user
 splinectomeR.Rproj
 inst/doc
+
+.DS_Store
