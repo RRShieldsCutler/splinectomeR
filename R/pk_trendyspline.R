@@ -177,8 +177,17 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
     randy.fit$p_base <- p_base
     randy.fit$distance <- (randy.fit$var1 - randy.fit$p_base)
     perm.area <- sum(randy.fit$distance, na.rm = T) / sum(!is.na(randy.fit$distance))  # Area above baseline for permutation
-    permuted <- append(permuted, perm.area)
-    perm_output$permuted <- permuted
+    ## Calculation bug fix by @winstoneanthony, thanks!
+    #after the first permutation, append the permutation output to placeholder,
+    #then append placeholder to the results of earlier permutations
+    if (ix > 1) {
+      permuted.retainer <- perm_output$permuted
+      transfer.permuted <- append(permuted.retainer,perm.area)
+    }
+    #for first iteration, simply add perm.area to new output variable
+    else {transfer.permuted <- perm.area}
+    #replace old permuted output with new updated output
+    perm_output$permuted <- transfer.permuted
     return(perm_output)
   }
   
