@@ -192,9 +192,11 @@ trendyspliner <- function(data = NULL, xvar = NULL, yvar = NULL, category = NULL
   }
   
   # Run the permutation over desired number of iterations
-  permuted <- list()
   perm_output <- list()
   perm_retainer <- data.frame()
+  permuted.retainer <- data.frame()  #variable used to store latest permutation
+  permuted <- data.frame()    #needs to be a data.frame
+  transfer.permuted <- NA    #initialize outside of loop
   for (ix in 1:perms) {
     perm_output <- .spline_permute(randy = df)
   }
